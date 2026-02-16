@@ -492,8 +492,9 @@ def obtener_modulos_por_tema(tipo: str, tema: str) -> list[str]:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200", 
-                   "ipdefrontendcertificados.vercel.app"
+    allow_origins=[
+        "http://localhost:4200",
+        "https://ipdefrontendcertificados.vercel.app", 
     ],
     allow_credentials=True,
     allow_methods=["*"],
