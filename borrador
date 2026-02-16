@@ -1,0 +1,1786 @@
+Quiero que me ayudes con lo siguiente por favor. Necesito desplegar 2 microservicios, y 1 aplicación base a railway por favor. Los dos microservicios obviamente son independientes de la aplicación base, pero sí las necesito ya que un microservicio es de autenticación, y es necesario para ingresar a la app. Por favor, sé específico y detallado con tus indicaciones. Utiliza la web para familiarizarte con Railway actualmente, y cómo está diseñado, etc.
+Te brindaré código que creo que es útil para tí. Primero, antes que nada, la aplicación ya la tengo desplegada en railway, pero no sé cómo "unirla" por así decirlo con mis dos microservicios. Y en front, este está en vercel, pero igual te daré el código útil.
+
+Front: 
+
+
+admin-service.ts 
+
+
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ApiResponse } from '../models/interfaces';
+
+export interface UsuarioAdmin {
+  id: number;
+  usuario: string;
+  role: 'ADMIN' | 'USER';
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AdminService {
+  private API_URL = 'http://localhost:8080/api/users';
+
+  constructor(private http: HttpClient) {}
+
+  /** Obtener todos los usuarios */
+  listarUsuarios(): Observable<ApiResponse<UsuarioAdmin[]>> {
+    return this.http.get<ApiResponse<UsuarioAdmin[]>>(this.API_URL);
+  }
+
+  /** Crear usuario */
+  crearUsuario(data: {
+    usuario: string;
+    password: string;
+    role: 'ADMIN' | 'USER';
+  }): Observable<ApiResponse<UsuarioAdmin>> {
+    return this.http.post<ApiResponse<UsuarioAdmin>>(this.API_URL, data);
+  }
+
+  /** Eliminar usuario */
+  eliminarUsuario(id: number): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${this.API_URL}/${id}`);
+  }
+}
+
+
+auth-service.ts 
+
+
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { LoginRequest, ApiResponse, AuthTokens } from '../models/interfaces';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AuthService {
+  private apiUrl = 'http://localhost:8080/auth/login';
+
+  constructor(private http: HttpClient) {}
+
+  /**
+   * Login del usuario.
+   *
+   * NIVEL 4:
+   * - Devuelve accessToken y refreshToken
+   */
+  login(request: LoginRequest): Observable<ApiResponse<AuthTokens>> {
+    return this.http.post<ApiResponse<AuthTokens>>(
+      'http://localhost:8080/auth/login',
+      request,
+      { withCredentials: true }, // 🔥 CLAVE para que el browser acepte la cookie
+    );
+  }
+
+  /**
+   * REFRESH TOKEN - NIVEL 7
+   *
+   * - NO se envía body
+   * - El refresh token viaja automáticamente en cookie HttpOnly
+   */
+  refreshToken(): Observable<ApiResponse<string>> {
+    return this.http.post<ApiResponse<string>>(
+      'http://localhost:8080/auth/refresh',
+      {},
+      { withCredentials: true }, // 🔑 OBLIGATORIO para cookies
+    );
+  }
+
+  /**
+   * LOGOUT - NIVEL 8
+   *
+   * - El backend borra cookie HttpOnly
+   * - Revoca refresh tokens
+   */
+  logout(): Observable<ApiResponse<null>> {
+    return this.http.post<ApiResponse<null>>(
+      'http://localhost:8080/auth/logout',
+      {},
+      { withCredentials: true },
+    );
+  }
+
+  /**
+   * Lee el role desde el accessToken (solo para UX).
+   * OJO: esto NO reemplaza la seguridad del backend.
+   */
+  getRole(): 'ADMIN' | 'USER' | null {
+    const token = localStorage.getItem('accessToken');
+    if (!token) return null;
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.role ?? null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+
+events-admin-service.ts 
+
+
+// events-admin-service.ts
+
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ApiResponse } from '../models/interfaces';
+
+export interface DownloadEventRow {
+  usuario: string;
+  createdAt: string; // ISO (viene del backend)
+}
+
+@Injectable({ providedIn: 'root' })
+export class EventsAdminService {
+  private url = 'http://localhost:8082/api/events/admin/downloads';
+
+  constructor(private http: HttpClient) {}
+
+  getDownloads(
+    usuario: string,
+    from?: string,
+    to?: string,
+  ): Observable<ApiResponse<DownloadEventRow[]>> {
+    let params = new HttpParams().set('usuario', usuario);
+
+    if (from) params = params.set('from', from);
+    if (to) params = params.set('to', to);
+
+    return this.http.get<ApiResponse<DownloadEventRow[]>>(this.url, { params });
+  }
+}
+
+
+events-service.ts 
+
+
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+
+@Injectable({ providedIn: 'root' })
+export class EventsService {
+  private url = 'http://localhost:8082/api/events';
+
+  constructor(private http: HttpClient) {}
+
+  track(evento: string, items: number, origen: string): Observable<any> {
+    return this.http.post(this.url, { evento, items, origen });
+  }
+}
+
+
+formularioService.ts 
+
+
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class FormularioService {
+  // private readonly API_URL = 'https://ipdebackendcertificados-production.up.railway.app/api/diplomas';
+  private readonly API_URL = 'http://localhost:8000/api/diplomas';
+
+  constructor(private http: HttpClient) {}
+
+  /** Envía múltiples modelos y recibe un solo PPTX */
+  generarPPTX(payload: any): Observable<Blob> {
+    return this.http.post(this.API_URL, payload, {
+      responseType: 'blob',
+    });
+  }
+}
+
+
+Back (empezaremos con microservice-auth, y también con main.py , ya que este último es el código del back de la aplicación como tal, y el microservice-auth es el código del microservicio para ingresar validado, autenticado)
+
+1. MICROSERVICE-AUTH :
+
+application.properties 
+
+
+spring.application.name=microservice-auth
+
+# ===============================
+# CONFIGURACIÓN DEL SERVIDOR
+# ===============================
+server.port=8080
+
+# ===============================
+# DATASOURCE - MYSQL
+# ===============================
+spring.datasource.url=jdbc:mysql://localhost:3306/ipde
+spring.datasource.username=root
+spring.datasource.password=wa1000201002
+
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# ===============================
+# JPA / HIBERNATE
+# ===============================
+spring.jpa.hibernate.ddl-auto=none
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# Dialecto recomendado para MySQL
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+
+# Deshabilitar Open Session in View para evitar problemas de LazyInitializationException
+spring.jpa.open-in-view=false
+spring.jmx.enabled=false
+
+# ===============================
+# JWT CONFIGURATION
+# ===============================
+
+# Clave para firmar tokens
+jwt.secret=mi_clave_secreta_super_segura_2026
+
+# Access token: 15 minutos
+jwt.access-expiration-ms=900000
+
+# Refresh token: 7 días
+jwt.refresh-expiration-ms=604800000
+
+
+
+
+JwtService.java 
+
+
+package com.service.microservice_auth.security;
+
+import java.util.Date;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
+import javax.crypto.SecretKey;
+
+/**
+ * Servicio encargado de generar y gestionar JWT.
+ * 
+ * NIVEL 4:
+ * - Access Token (vida corta)
+ * - Refresh Token (vida larga)
+ */
+@Service
+public class JwtService {
+
+    private final SecretKey secretKey;
+    private final long accessExpirationMs;
+    private final long refreshExpirationMs;
+
+    public JwtService(
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.access-expiration-ms}") long accessExpirationMs,
+            @Value("${jwt.refresh-expiration-ms}") long refreshExpirationMs) {
+
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+        this.accessExpirationMs = accessExpirationMs;
+        this.refreshExpirationMs = refreshExpirationMs;
+    }
+
+    /**
+     * Genera un ACCESS TOKEN.
+     * 
+     * - Se usa para acceder a endpoints protegidos
+     * - Vida corta
+     */
+    public String generateAccessToken(String username, String role) {
+        return generateToken(username, accessExpirationMs, "ACCESS", role);
+    }
+
+    /**
+     * Genera un REFRESH TOKEN.
+     * 
+     * - Se usa solo para renovar el access token
+     * - Vida larga
+     */
+    public String generateRefreshToken(String username) {
+        // refresh NO necesita role, solo identidad y type
+        return generateToken(username, refreshExpirationMs, "REFRESH", null);
+    }
+
+    /**
+     * Método interno para generar tokens JWT.
+     */
+    private String generateToken(String username, long expirationMs, String type, String role) {
+        Date now = new Date();
+        Date expiryDate = new Date(now.getTime() + expirationMs);
+
+        var builder = Jwts.builder()
+                .setId(UUID.randomUUID().toString())
+                .setSubject(username)
+                .claim("type", type)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate);
+
+        // ✅ Role SOLO en access token
+        if (role != null && "ACCESS".equals(type)) {
+            builder = builder.claim("role", role);
+        }
+
+        return builder
+                .signWith(secretKey, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    /**
+     * Extrae role del ACCESS token.
+     */
+    public String getRole(String token) {
+        Claims claims = getClaims(token);
+        Object role = claims.get("role");
+        return role == null ? null : role.toString();
+    }
+
+    /**
+     * Métodos de validación JWT.
+     */
+    public boolean isTokenValid(String token) {
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(secretKey)
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Extrae los claims del token.
+     */
+    public Claims getClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    /**
+     * Valida que el token sea de tipo ACCESS.
+     */
+    public boolean isAccessToken(String token) {
+        Claims claims = getClaims(token);
+        return "ACCESS".equals(claims.get("type"));
+    }
+
+    /**
+     * Extrae el username (subject).
+     */
+    public String getUsername(String token) {
+        return getClaims(token).getSubject();
+    }
+
+    public boolean isRefreshToken(String token) {
+        Claims claims = getClaims(token);
+        return "REFRESH".equals(claims.get("type"));
+    }
+
+}
+
+
+JwtAuthFilter.java 
+
+
+package com.service.microservice_auth.security;
+
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+/**
+ * Filtro de autorización JWT.
+ * 
+ * NIVEL 5:
+ * - Valida Access Token
+ * - Rechaza tokens inválidos
+ * - No usa Spring Security aún
+ */
+@Component
+public class JwtAuthFilter implements Filter {
+
+    private final JwtService jwtService;
+
+    public JwtAuthFilter(JwtService jwtService) {
+        this.jwtService = jwtService;
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+
+        HttpServletRequest req = (HttpServletRequest) request;
+        HttpServletResponse res = (HttpServletResponse) response;
+
+        String origin = req.getHeader("Origin");
+        if ("http://localhost:4200".equals(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+        res.setHeader("Vary", "Origin");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+        res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
+        res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+        }
+
+        if ("OPTIONS".equalsIgnoreCase(req.getMethod())) {
+            res.setStatus(HttpServletResponse.SC_OK);
+            return;
+        }
+
+        String path = req.getRequestURI();
+
+        // 🔓 Endpoints públicos
+        if (path.startsWith("/auth")) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // (1) Validación JWT access token (igual que ya tienes)
+        String authHeader = req.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        String token = authHeader.substring(7);
+
+        if (!jwtService.isTokenValid(token) || !jwtService.isAccessToken(token)) {
+            res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        // (2) ✅ Autorización por rol (solo para rutas específicas)
+        if (path.startsWith("/api/users")) {
+            String role = jwtService.getRole(token);
+            if (!"ADMIN".equals(role)) {
+                res.setStatus(HttpServletResponse.SC_FORBIDDEN); // 403
+                return;
+            }
+        }
+
+        // Token válido y autorizado → continuar
+        chain.doFilter(request, response);
+    }
+}
+
+
+SecurityConfig.java 
+
+
+package com.service.microservice_auth.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+
+import com.service.microservice_auth.security.JwtAuthFilter;
+
+/**
+ * Configuración de seguridad básica.
+ * 
+ * NIVEL 3:
+ * - Provee BCryptPasswordEncoder como Bean
+ * - Aún NO usa Spring Security (filtros, JWT, etc)
+ */
+@Configuration
+public class SecurityConfig {
+
+    /**
+     * BCrypt con fuerza por defecto (10).
+     * 
+     * Suficiente para la mayoría de sistemas.
+     */
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    /**
+     * Registro manual del filtro JWT.
+     */
+    @Bean
+    public FilterRegistrationBean<JwtAuthFilter> jwtFilter(JwtAuthFilter filter) {
+        FilterRegistrationBean<JwtAuthFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(filter);
+        registration.addUrlPatterns("/*");
+        registration.setOrder(1);
+        return registration;
+    }
+}
+
+
+AuthController.java 
+
+
+package com.service.microservice_auth.controllers;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.service.microservice_auth.dtos.ApiResponse;
+import com.service.microservice_auth.dtos.AuthTokensResponse;
+import com.service.microservice_auth.dtos.LoginRequest;
+import com.service.microservice_auth.security.JwtService;
+import com.service.microservice_auth.services.RefreshTokenService;
+import com.service.microservice_auth.services.UsuarioService;
+
+import jakarta.validation.Valid;
+
+/**
+ * Controlador de autenticación.
+ * 
+ * NIVEL 2:
+ * - Usa DTOs explícitos
+ * - Usa ApiResponse como formato estándar
+ * - NO aplica hashing ni tokens todavía
+ */
+@CrossOrigin(origins = {
+                "http://localhost:4200",
+                "https://ipdefrontendcertificados.vercel.app"
+}, allowCredentials = "true")
+@RestController
+@RequestMapping("/auth")
+public class AuthController {
+
+        private final JwtService jwtService;
+        private final UsuarioService usuarioService;
+        private final RefreshTokenService refreshTokenService;
+
+        public AuthController(
+                        JwtService jwtService,
+                        UsuarioService usuarioService,
+                        RefreshTokenService refreshTokenService) {
+                this.jwtService = jwtService;
+                this.usuarioService = usuarioService;
+                this.refreshTokenService = refreshTokenService;
+        }
+
+        /**
+         * LOGIN - NIVEL 7
+         * 
+         * - AccessToken → se devuelve en el body
+         * - RefreshToken → se guarda en COOKIE HttpOnly (NO accesible desde JS)
+         */
+        @PostMapping("/login")
+        public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody LoginRequest request) {
+
+                boolean success = usuarioService.login(
+                                request.getUsuario(),
+                                request.getPassword());
+
+                if (!success) {
+                        return ResponseEntity.status(401)
+                                        .body(ApiResponse.error("Usuario o contraseña incorrectos", null));
+                }
+
+                // 🔐 Generación de tokens
+                String role = usuarioService.getRoleByUsername(request.getUsuario()).name();
+                String accessToken = jwtService.generateAccessToken(request.getUsuario(), role);
+                String refreshToken = jwtService.generateRefreshToken(request.getUsuario());
+
+                // 💾 Guardar refresh token hasheado
+                refreshTokenService.save(request.getUsuario(), refreshToken);
+
+                // 🍪 COOKIE HttpOnly para refresh token
+                // JavaScript NO puede leerla (protección XSS)
+                ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+                                .httpOnly(true) // 🔒 NO accesible desde JS
+                                .secure(true) // ⚠️ true en PRODUCCIÓN (HTTPS)
+                                .path("/auth/refresh") // esto significa que la cookie se enviará en TODAS las rutas, no
+                                               // solo /auth/refresh, para que funcione en cross-site
+                                .maxAge(7 * 24 * 60 * 60) // 7 días
+                                .sameSite("None") // Protege contra CSRF pero permite navegación normal, y será None con
+                                                  // secure(true) en producción, para que funcione en cross-site
+                                .build();
+
+                // ❗ IMPORTANTE:
+                // Ya NO enviamos refreshToken en el body
+                AuthTokensResponse response = new AuthTokensResponse(accessToken, null);
+
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                                .body(ApiResponse.ok("Login exitoso", response));
+        }
+
+        /**
+         * REFRESH TOKEN - NIVEL 7
+         * 
+         * - El refresh token se lee SOLO desde cookie HttpOnly
+         * - El frontend NO envía nada
+         * - Se rota el refresh token
+         */
+        @PostMapping("/refresh")
+        public ResponseEntity<ApiResponse<?>> refresh(
+                        @CookieValue(name = "refreshToken", required = false) String refreshToken) {
+
+                // ❌ No hay cookie
+                if (refreshToken == null) {
+                        return ResponseEntity.status(401)
+                                        .body(ApiResponse.error("Refresh token no encontrado", null));
+                }
+
+                // ❌ Token inválido o no es refresh
+                if (!jwtService.isTokenValid(refreshToken)
+                                || !jwtService.isRefreshToken(refreshToken)
+                                || !refreshTokenService.isValid(refreshToken)) {
+                        return ResponseEntity.status(401)
+                                        .body(ApiResponse.error("Refresh token inválido", null));
+                }
+
+                String username = jwtService.getUsername(refreshToken);
+
+                // ✅ role desde BD (fuente de verdad)
+                String role = usuarioService.getRoleByUsername(username).name();
+
+                String newAccessToken = jwtService.generateAccessToken(username, role);
+                String newRefreshToken = jwtService.generateRefreshToken(username);
+
+                // ✅ REVOCAR refresh anterior y GUARDAR el nuevo
+                refreshTokenService.revokeAll(username);
+                refreshTokenService.save(username, newRefreshToken);
+
+                // 🍪 Nueva cookie (rotación)
+                ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
+                                .httpOnly(true)
+                                .secure(true) // true en PROD
+                                .path("/auth/refresh") // esto significa que la cookie se enviará en TODAS las rutas, no
+                                               // solo /auth/refresh, para que funcione en cross-site
+                                .maxAge(7 * 24 * 60 * 60)
+                                .sameSite("None") // Protege contra CSRF pero permite navegación normal, y será None con
+                                                  // secure(true) en producción, para que funcione en cross-site
+                                .build();
+
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                                .body(ApiResponse.ok("Access token renovado", newAccessToken));
+        }
+
+        /**
+         * LOGOUT REAL - NIVEL 8
+         * 
+         * - Revoca refresh tokens en BD
+         * - Borra cookie HttpOnly
+         */
+        @PostMapping("/logout")
+        public ResponseEntity<ApiResponse<?>> logout(
+                        @CookieValue(name = "refreshToken", required = false) String refreshToken) {
+
+                if (refreshToken != null && jwtService.isTokenValid(refreshToken)) {
+                        String usuario = jwtService.getUsername(refreshToken);
+                        refreshTokenService.revokeAll(usuario);
+                }
+
+                // 🍪 Borrar cookie
+                ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                                .httpOnly(true)
+                                .secure(true)
+                                .path("/auth/refresh")
+                                .sameSite("None")
+                                .build();
+
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                                .body(ApiResponse.ok("Logout exitoso", null));
+        }
+
+}
+
+
+UsuarioAdminController.java 
+
+
+package com.service.microservice_auth.controllers;
+
+import java.util.List;
+
+import org.springframework.web.bind.annotation.*;
+
+import com.service.microservice_auth.dtos.ApiResponse;
+import com.service.microservice_auth.dtos.CreateUserRequest;
+import com.service.microservice_auth.dtos.UpdateUserRequest;
+import com.service.microservice_auth.models.Usuario;
+import com.service.microservice_auth.services.UsuarioService;
+
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping("/api/users")
+public class UsuarioAdminController {
+
+    private final UsuarioService usuarioService;
+
+    public UsuarioAdminController(UsuarioService usuarioService) {
+        this.usuarioService = usuarioService;
+    }
+
+    /** ADMIN: listar usuarios */
+    @GetMapping
+    public ApiResponse<List<Usuario>> list() {
+        return ApiResponse.ok("Usuarios", usuarioService.listAll());
+    }
+
+    /** ADMIN: crear usuario */
+    @PostMapping
+    public ApiResponse<Usuario> create(
+            @RequestBody @Valid CreateUserRequest req) {
+
+        Usuario u = usuarioService.createUser(
+                req.getUsuario(),
+                req.getPassword(),
+                req.getRole());
+
+        return ApiResponse.ok("Usuario creado", u);
+    }
+
+    /** ADMIN: actualizar usuario */
+    @PutMapping("/{id}")
+    public ApiResponse<Usuario> update(
+            @PathVariable Long id,
+            @RequestBody UpdateUserRequest req) {
+
+        Usuario u = usuarioService.updateUser(
+                id,
+                req.getPassword(),
+                req.getRole());
+
+        return ApiResponse.ok("Usuario actualizado", u);
+    }
+
+    /** ADMIN: eliminar usuario */
+    @DeleteMapping("/{id}")
+    public ApiResponse<?> delete(@PathVariable Long id) {
+        usuarioService.deleteUser(id);
+        return ApiResponse.ok("Usuario eliminado", null);
+    }
+}
+
+
+RefreshTokenService.java 
+
+
+package com.service.microservice_auth.services;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+
+import org.springframework.stereotype.Service;
+
+import com.service.microservice_auth.models.RefreshToken;
+import com.service.microservice_auth.repositories.RefreshTokenRepository;
+
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * SERVICIO REFRESH TOKEN - NIVEL 8
+ * 
+ * - Hash seguro del refresh token
+ * - Validación
+ * - Revocación
+ */
+@Service
+public class RefreshTokenService {
+
+    private final RefreshTokenRepository repository;
+
+    public RefreshTokenService(RefreshTokenRepository repository) {
+        this.repository = repository;
+    }
+
+    /**
+     * Guarda refresh token hasheado.
+     */
+    public void save(String usuario, String refreshToken) {
+        RefreshToken rt = new RefreshToken();
+        rt.setUsuario(usuario);
+        rt.setTokenHash(hash(refreshToken));
+        rt.setRevoked(false);
+
+        repository.save(rt);
+    }
+
+    /**
+     * Valida si el refresh token es válido y no revocado.
+     */
+    public boolean isValid(String refreshToken) {
+        return repository
+                .findByTokenHashAndRevokedFalse(hash(refreshToken))
+                .isPresent();
+    }
+
+    /**
+     * Revoca TODOS los refresh tokens de un usuario (logout).
+     */
+    @Transactional // Para asegurar que la operación de revocación es atómica
+    public void revokeAll(String usuario) {
+        repository.deleteByUsuario(usuario);
+    }
+
+    /**
+     * Hash SHA-256 del token.
+     */
+    private String hash(String token) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] encoded = digest.digest(token.getBytes(StandardCharsets.UTF_8));
+
+            StringBuilder hex = new StringBuilder();
+            for (byte b : encoded) {
+                hex.append(String.format("%02x", b));
+            }
+            return hex.toString();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error hashing token");
+        }
+    }
+}
+
+
+UsuarioService.java 
+
+
+package com.service.microservice_auth.services;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.service.microservice_auth.models.Role;
+import com.service.microservice_auth.models.Usuario;
+import com.service.microservice_auth.repositories.UsuarioRepository;
+
+/**
+ * Servicio de dominio para usuarios.
+ * 
+ * NIVEL 3:
+ * - Comparación segura de contraseñas con BCrypt
+ * - Nunca compara texto plano con texto plano
+ */
+@Service
+public class UsuarioService {
+
+    private final UsuarioRepository usuarioRepository;
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    public UsuarioService(
+            UsuarioRepository usuarioRepository,
+            BCryptPasswordEncoder passwordEncoder) {
+
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    /**
+     * Valida credenciales del usuario.
+     *
+     * @param usuario  username ingresado
+     * @param password contraseña en texto plano (input)
+     * @return true si las credenciales son válidas
+     */
+    public boolean login(String usuario, String password) {
+
+        Optional<Usuario> usuarioDB = usuarioRepository.findByUsuario(usuario);
+
+        if (usuarioDB.isEmpty()) { // significa que si usuarioDB no tiene un valor dentro entonces return false
+            return false;
+        }
+
+        // return usuarioDB.get().getPassword().equals(password);
+        // BCrypt compara texto plano vs hash almacenado
+        return passwordEncoder.matches( // qué hace matches? compara el texto plano con el hash almacenado
+                password,
+                usuarioDB.get().getPassword());
+    }
+
+    /**
+     * NIVEL 9.2 - ROLES
+     * Obtiene el rol del usuario (para inyectarlo en el JWT).
+     */
+    public Role getRoleByUsername(String usuario) {
+        return usuarioRepository.findByUsuario(usuario)
+                .map(Usuario::getRole)
+                .orElseThrow(() -> new RuntimeException("Usuario no existe"));
+    }
+
+    // ==========================
+    // CRUD ADMIN (para controller)
+    // ==========================
+
+    public List<Usuario> listAll() {
+        return usuarioRepository.findAll();
+    }
+
+    public Usuario createUser(String usuario, String rawPassword, Role role) {
+        Usuario u = new Usuario();
+        u.setUsuario(usuario);
+        u.setPassword(passwordEncoder.encode(rawPassword));
+        u.setRole(role == null ? Role.USER : role);
+        return usuarioRepository.save(u);
+    }
+
+    public Usuario updateUser(Long id, String rawPassword, Role role) {
+        Usuario u = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no existe"));
+
+        if (rawPassword != null && !rawPassword.isBlank()) {
+            u.setPassword(passwordEncoder.encode(rawPassword));
+        }
+        if (role != null) {
+            u.setRole(role);
+        }
+        return usuarioRepository.save(u);
+    }
+
+    public void deleteUser(Long id) {
+        usuarioRepository.deleteById(id);
+    }
+}
+
+2. BACKEND DE APLICACIÓN (main.py) :
+
+
+main.py 
+
+
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+from pptx import Presentation
+from pptx.enum.shapes import MSO_SHAPE_TYPE
+from pptx.util import Cm
+from io import BytesIO
+import unicodedata
+import re
+import os
+import json
+from datetime import datetime
+from dotenv import load_dotenv
+from openai import OpenAI
+from copy import deepcopy
+from typing import List, Tuple
+import qrcode
+import requests
+from fastapi import Header
+from jose import jwt, JWTError
+from fastapi import Depends
+import logging
+
+logger = logging.getLogger("auth")
+
+# -------------------------------------------------
+# CONFIGURACIÓN GENERAL
+# -------------------------------------------------
+
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+app = FastAPI(title="Certificados API", version="2.3.0")
+
+# Modelos disponibles (carpetas dentro de app/templates)
+# IMPORTANTE: Deben coincidir con los valores enviados desde el frontend:
+# - INSTITUTO
+# - UNIVERSIDAD_2QRS
+# - UNIVERSIDAD_AZUL
+# - COLEGIO_ABOGADOS_CALLAO
+MODELO_FOLDER_MAP = {
+    "INSTITUTO": "instituto",
+    "UNIVERSIDAD_2QRS": "universidad_2qrs",
+    "UNIVERSIDAD_AZUL": "universidad_azul",
+    "COLEGIO_ABOGADOS_CALLAO": "colegio_de_abogados_del_callao", 
+    "COLEGIO_DE_PROFESORES_DEL_PERU": "colegio_de_profesores_del_peru",
+}
+
+# Modelos que usan formato de fecha largo (dd de Mes del yyyy)
+MODELOS_FECHA_LARGA = {
+    "INSTITUTO",
+    "UNIVERSIDAD_AZUL",
+    "COLEGIO_ABOGADOS_CALLAO", 
+    "COLEGIO_DE_PROFESORES_DEL_PERU",
+}
+
+
+# Nombre de archivo de plantilla por tipo (dentro de cada carpeta de modelo)
+TEMPLATE_FILENAME_MAP = {
+    "DIPLOMADO": "plantilla_diplomado.pptx",
+    "PROGRAMA DE ESPECIALIZACIÓN": "plantilla_programa_de_especializacion.pptx",
+    "CURSO": "plantilla_curso.pptx",
+    "CURSO_DE_CAPACITACION": "plantilla_curso_de_capacitacion.pptx",
+    "CURSO_DE_ACTUALIZACION": "plantilla_curso_de_actualizacion.pptx",
+}
+
+# Nº de módulos por tipo
+MODULOS_COUNT = {
+    "DIPLOMADO": 8,
+    "PROGRAMA DE ESPECIALIZACIÓN": 8,
+    "CURSO": 5,
+    "CURSO_DE_CAPACITACION": 5,
+    "CURSO_DE_ACTUALIZACION": 5,
+}
+
+# Cache en memoria: (tipo, tema) -> módulos
+MODULOS_CACHE: dict[Tuple[str, str], List[str]] = {}
+
+
+# -------------------------------------------------
+# CLIENTE PARA MICROSERVICE EVENTS
+# -------------------------------------------------
+
+"""
+Cliente HTTP para registrar eventos de uso.
+
+Este FastAPI NO guarda eventos directamente en BD.
+Delegamos el tracking al microservice-events para:
+- desacoplar métricas del negocio principal
+- permitir escalabilidad
+- centralizar estadísticas
+"""
+
+
+EVENTS_SERVICE_URL = os.getenv(
+    "EVENTS_SERVICE_URL",
+    "https://microservice-events-production.up.railway.app/api/events"
+)
+
+
+# -------------------------------------------------
+# UTILIDADES
+# -------------------------------------------------
+
+JWT_SECRET = "mi_clave_secreta_super_segura_2026"
+JWT_ALG = "HS256"
+
+def validate_access_token(authorization: str = Header(...)) -> str:
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Token inválido")
+
+    token = authorization.replace("Bearer ", "").strip()
+
+    try:
+        claims = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALG])
+    except JWTError:
+         # ⬇️ LOG SOLO EN DEBUG (no ensucia logs normales)
+        logger.debug("Access token expirado o inválido")
+        raise HTTPException(status_code=401, detail="Token expirado o inválido")
+
+    if claims.get("type") != "ACCESS":
+        raise HTTPException(status_code=401, detail="Token no es ACCESS")
+
+    # opcional: devolver username si lo necesitas
+    return token
+
+
+def safe_filename(text: str) -> str:
+    text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    text = re.sub(r"[^a-zA-Z0-9_-]", "_", text)
+    return text
+
+
+def format_date_ddmmyyyy(date_str: str) -> str:
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").strftime("%d/%m/%Y")
+    except ValueError:
+        return date_str
+
+
+def format_date_long_es(date_str: str) -> str:
+    try:
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+        meses = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ]
+
+        # ✅ día con cero a la izquierda
+        dia = f"{date_obj.day:02d}"
+
+        return f"{dia} de {meses[date_obj.month - 1]} del {date_obj.year}"
+    except ValueError:
+        return date_str
+
+def format_date_range_long_es(fecha_inicio: str, fecha_fin: str) -> tuple[str, str]:
+    """
+    Devuelve (fecha_inicio_formateada, fecha_fin_formateada)
+    aplicando la regla:
+    - Si ambos años son iguales → el año solo se muestra en la fecha final
+    - Si son distintos → cada fecha muestra su año
+    """
+    try:
+        inicio = datetime.strptime(fecha_inicio, "%Y-%m-%d")
+        fin = datetime.strptime(fecha_fin, "%Y-%m-%d")
+
+        meses = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ]
+
+        dia_inicio = f"{inicio.day:02d}"
+        dia_fin = f"{fin.day:02d}"
+
+        if inicio.year == fin.year:
+            fecha_inicio_str = f"{dia_inicio} de {meses[inicio.month - 1]}"
+            fecha_fin_str = f"{dia_fin} de {meses[fin.month - 1]} del {fin.year}"
+        else:
+            fecha_inicio_str = f"{dia_inicio} de {meses[inicio.month - 1]} del {inicio.year}"
+            fecha_fin_str = f"{dia_fin} de {meses[fin.month - 1]} del {fin.year}"
+
+        return fecha_inicio_str, fecha_fin_str
+
+    except ValueError:
+        # fallback seguro
+        return format_date_long_es(fecha_inicio), format_date_long_es(fecha_fin)
+
+
+def format_two_digits_number(value: int) -> str:
+    """
+    Formatea números enteros a dos dígitos.
+    Ej: 3 -> 03, 12 -> 12
+    """
+    try:
+        return f"{int(value):02d}"
+    except (ValueError, TypeError):
+        return str(value)
+
+
+def format_two_digits_float(value: float) -> str:
+    """
+    Formatea números decimales manteniendo decimales,
+    pero con parte entera a dos dígitos.
+    Ej: 3 -> 03
+        3.5 -> 03.5
+        12 -> 12
+        12.25 -> 12.25
+    """
+    try:
+        entero = int(value)
+        decimal = value - entero
+
+        if decimal == 0:
+            return f"{entero:02d}"
+
+        # Eliminar ceros innecesarios en decimales
+        decimal_str = str(round(decimal, 2)).lstrip("0")
+        return f"{entero:02d}{decimal_str}"
+    except (ValueError, TypeError):
+        return str(value)
+
+
+def calcular_horas_por_modulo(total_horas: int, cantidad_modulos: int) -> str:
+    """
+    Calcula horas por módulo:
+    total_horas / cantidad_modulos
+    Devuelve string sin decimales si es entero, o con 2 decimales si no.
+    """
+    if cantidad_modulos <= 0:
+        return "0"
+
+    valor = total_horas / cantidad_modulos
+
+    # Si es entero, no mostrar decimales
+    if valor.is_integer():
+        return str(int(valor))
+
+    # Si no, mostrar hasta 2 decimales
+    return f"{valor:.2f}"
+
+
+def nombre_completo_capitalizado(nombres: str, apellidos: str) -> str:
+    texto = f"{nombres} {apellidos}".strip().lower()
+    return " ".join(p.capitalize() for p in texto.split())
+
+
+def modelo_con_mayuscula_inicial(tipo_modelo: str) -> str:
+    texto = tipo_modelo.strip().lower().split()
+    if not texto:
+        return ""
+    texto[0] = texto[0].capitalize()
+    return " ".join(texto)
+
+
+def resolve_template_path(modelo_certificado: str, tipo_modelo: str) -> str:
+    modelo_key = (modelo_certificado or "").upper().strip()
+    tipo_key = (tipo_modelo or "").upper().strip()
+
+    if modelo_key not in MODELO_FOLDER_MAP:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Modelo de certificado no soportado: {modelo_key}"
+        )
+
+    if tipo_key not in TEMPLATE_FILENAME_MAP:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Tipo de certificado no soportado: {tipo_key}"
+        )
+
+    folder = MODELO_FOLDER_MAP[modelo_key]
+    filename = TEMPLATE_FILENAME_MAP[tipo_key]
+
+    return os.path.join("app", "templates", folder, filename)
+
+##agregué
+def normalize_text_for_url(text: str) -> str:
+    text = unicodedata.normalize("NFKD", text)
+    text = text.encode("ascii", "ignore").decode("ascii")
+    text = re.sub(r"[^a-zA-Z0-9]", "", text)
+    return text.lower()
+
+
+def build_qr_url(nombres: str, apellidos: str, tema: str) -> str:
+    primer_nombre = nombres.strip().split()[0]
+    primer_apellido = apellidos.strip().split()[0]
+
+    base = (
+        normalize_text_for_url(primer_nombre)
+        + normalize_text_for_url(primer_apellido)
+        + normalize_text_for_url(tema)
+    )
+
+    return f"https://especializacionvirtual.com/certificados/{base}.pdf"
+
+
+def generate_qr_image(url: str) -> BytesIO:
+    qr = qrcode.QRCode(
+        version=4,
+        error_correction=qrcode.constants.ERROR_CORRECT_Q,
+        box_size=10,
+        border=1,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+    buffer.seek(0)
+    return buffer
+##fin agregué
+
+def insert_qr_at_placeholder(prs: Presentation, qr_stream: BytesIO):
+    QR_SIZE = Cm(2.78)
+
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if not shape.has_text_frame:
+                continue
+
+            if "{{QR_CODE}}" not in shape.text_frame.text:
+                continue
+
+            left = shape.left
+            top = shape.top
+
+            shape.text_frame.clear()
+
+            slide.shapes.add_picture(
+                qr_stream,
+                left=left,
+                top=top,
+                width=QR_SIZE,
+                height=QR_SIZE,
+            )
+
+            return  # solo un QR
+
+
+
+
+                    
+
+##DISTRIBUIR HORAS POR MÓDULO
+def distribuir_horas_por_modulo(total_horas: int, cantidad_modulos: int) -> List[int]:
+    """
+    Distribuye las horas de forma progresiva y variada,
+    asegurando que la suma final sea EXACTA.
+    """
+    if cantidad_modulos <= 0:
+        return []
+
+    pesos = []
+    incremento = 0.1
+    for i in range(cantidad_modulos):
+        peso = 1 + (i * incremento)
+        pesos.append(peso)
+    suma_pesos = sum(pesos)
+    
+    horas = [
+        int((peso / suma_pesos) * total_horas)
+        for peso in pesos
+    ]
+
+    # Ajuste para asegurar suma exacta
+    diferencia = total_horas - sum(horas)
+
+    # Repartir diferencia empezando por el último módulo
+    i = cantidad_modulos - 1
+    while diferencia > 0:
+        horas[i] += 1
+        diferencia -= 1
+        i -= 1
+        if i < 0:
+            i = cantidad_modulos - 1
+
+    return horas
+
+
+# -------------------------------------------------
+# REGISTRO DE EVENTOS DE USO (MICROSERVICE-EVENTS)
+# -------------------------------------------------
+
+def registrar_evento_uso(
+    token: str,
+    evento: str,
+    items: int,
+    origen: str = "API_FASTAPI"
+):
+    """
+    Registra un evento de uso en microservice-events.
+
+    - token: AccessToken JWT recibido desde frontend
+    - evento: tipo de evento (PPTX_GENERATED, LOGIN, etc.)
+    - items: cantidad de elementos procesados
+    - origen: origen del evento (API_FASTAPI)
+    """
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "evento": evento,
+        "items": items,
+        "origen": origen
+    }
+    try:
+        r = requests.post(
+            EVENTS_SERVICE_URL,
+            json=payload,
+            headers=headers,
+            timeout=2
+        )
+        # ✅ LOG ÚTIL (solo debug, luego lo puedes bajar)
+        if r.status_code >= 400:
+            print(f"[WARN] Tracking falló {r.status_code}: {r.text}")
+    except Exception as e:
+        print(f"[WARN] No se pudo registrar evento: {e}")
+
+        
+
+# -------------------------------------------------
+# OPENAI – GENERACIÓN DE MÓDULOS DINÁMICA
+# -------------------------------------------------
+
+def build_prompt(tema: str, count: int) -> str:
+    return f"""
+Devuelve EXCLUSIVAMENTE un JSON válido con este formato exacto:
+
+{{
+  "modulos": [
+    {', '.join(['"string"' for _ in range(count)])}
+  ]
+}}
+
+REGLAS OBLIGATORIAS:
+- Exactamente {count} módulos
+- SOLO títulos (NO descripciones)
+- Máximo 12 palabras por módulo
+- En español
+- NO numeración
+- NO texto fuera del JSON
+- NO explicaciones
+
+Certificado: {tema}
+""".strip()
+
+
+def obtener_modulos_por_tema(tipo: str, tema: str) -> list[str]:
+    cache_key = (tipo, tema)
+    if cache_key in MODULOS_CACHE:
+        return MODULOS_CACHE[cache_key]
+
+    if tipo not in MODULOS_COUNT:
+        raise ValueError("Tipo no soportado para módulos")
+
+    count = MODULOS_COUNT[tipo]
+
+    try:
+        response = client.responses.create(
+            model="gpt-5-mini",
+            input=[
+                {"role": "system", "content": "Eres un asistente académico extremadamente estricto."},
+                {"role": "user", "content": build_prompt(tema, count)}
+            ]
+        )
+
+        data = json.loads(response.output_text)
+        modulos = data.get("modulos", [])
+
+        if not isinstance(modulos, list) or len(modulos) != count:
+            raise ValueError("Cantidad de módulos inválida")
+
+        modulos = [str(m).upper().strip() for m in modulos]
+        MODULOS_CACHE[cache_key] = modulos
+        return modulos
+
+    except Exception:
+        return [f"MÓDULO {i+1}" for i in range(count)]
+
+
+# -------------------------------------------------
+# CORS
+# -------------------------------------------------
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200", 
+                   "ipdefrontendcertificados.vercel.app"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+# -------------------------------------------------
+# DTO
+# -------------------------------------------------
+
+class DiplomaRequest(BaseModel):
+    modeloCertificado: str
+    tipoModelo: str
+    nombres: str
+    apellidos: str
+    temaDiplomado: str
+    fechaInicio: str
+    fechaFin: str
+    horasAcademicas: int
+    creditosAcademicos: int
+    folioNumero: str
+    fechaEmision: str
+
+
+class BatchRequest(BaseModel):
+    items: List[DiplomaRequest]
+
+
+# -------------------------------------------------
+# REEMPLAZO DE TEXTO (PRESERVA FUENTES)
+# -------------------------------------------------
+
+def replace_in_text_frame_preserve_font(text_frame, mapping):
+    for paragraph in text_frame.paragraphs:
+        for run in paragraph.runs:
+            if not run.text:
+                continue
+            for k, v in mapping.items():
+                if k in run.text:
+                    run.text = run.text.replace(k, v)
+
+
+def replace_in_shape(shape, mapping):
+    if shape.has_text_frame:
+        replace_in_text_frame_preserve_font(shape.text_frame, mapping)
+
+    if shape.has_table:
+        for row in shape.table.rows:
+            for cell in row.cells:
+                replace_in_text_frame_preserve_font(cell.text_frame, mapping)
+
+    if shape.shape_type == MSO_SHAPE_TYPE.GROUP:
+        for s in shape.shapes:
+            replace_in_shape(s, mapping)
+
+
+def replace_placeholders(prs, mapping):
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            replace_in_shape(shape, mapping)
+
+        if slide.has_notes_slide:
+            for shape in slide.notes_slide.shapes:
+                replace_in_shape(shape, mapping)
+
+    for layout in prs.slide_layouts:
+        for shape in layout.shapes:
+            replace_in_shape(shape, mapping)
+
+    for master in prs.slide_masters:
+        for shape in master.shapes:
+            replace_in_shape(shape, mapping)
+
+
+# -------------------------------------------------
+# MERGE PPTX
+# -------------------------------------------------
+
+def _replace_rids_in_element(el, rid_map: dict[str, str]):
+    for e in el.iter():
+        if not hasattr(e, "attrib"):
+            continue
+        for attr_key, attr_val in list(e.attrib.items()):
+            if attr_val in rid_map:
+                e.attrib[attr_key] = rid_map[attr_val]
+
+
+def clone_slide_into(dest_prs: Presentation, src_slide):
+    # ✅ USAR LAYOUT EN BLANCO (evita placeholders duplicados)
+    blank_layout = dest_prs.slide_layouts[6]
+    new_slide = dest_prs.slides.add_slide(blank_layout)
+
+    spTree = new_slide.shapes._spTree
+    src_spTree = src_slide.shapes._spTree
+
+    for child in list(src_spTree):
+        tag = child.tag.lower()
+
+        # ❌ NO copiar propiedades internas del layout
+        if tag.endswith("nvgrpsppr") or tag.endswith("grpsppr"):
+            continue
+
+        spTree.insert_element_before(deepcopy(child), 'p:extLst')
+
+    # 🔁 Copiar relaciones (imágenes, fondos, etc.)
+    rid_map = {}
+    for rId, rel in src_slide.part.rels.items():
+        try:
+            new_rId = new_slide.part.relate_to(
+                rel._target,
+                rel.reltype,
+                is_external=rel.is_external
+            )
+            rid_map[rId] = new_rId
+        except Exception:
+            continue
+
+    _replace_rids_in_element(new_slide._element, rid_map)
+
+
+def merge_presentations(presentations: List[Presentation]) -> Presentation:
+    if not presentations:
+        raise ValueError("No hay presentaciones para unir")
+
+    # 🔒 Usar la primera presentación como base (PRESERVA TEMA Y COLORES)
+    dest = presentations[0]
+
+    for prs in presentations[1:]:
+        for slide in prs.slides:
+            clone_slide_into(dest, slide)
+
+    return dest
+
+
+# -------------------------------------------------
+# GENERACIÓN DE PPTX POR ITEM  ✅ RESTAURADA
+# -------------------------------------------------
+
+def generar_presentacion_por_item(item: DiplomaRequest) -> Presentation:
+    tipo = item.tipoModelo.upper().strip()
+    modelo_cert = item.modeloCertificado.upper().strip()
+
+    template_path = resolve_template_path(modelo_cert, tipo)
+
+    if not os.path.exists(template_path):
+        raise HTTPException(
+            status_code=500,
+            detail=f"No existe la plantilla: {template_path}"
+        )
+
+    prs = Presentation(template_path)
+    
+    # Determinar formato de fecha según modelo de certificado
+    usar_fecha_larga = modelo_cert in MODELOS_FECHA_LARGA
+
+    if usar_fecha_larga:
+        fecha_inicio, fecha_fin = format_date_range_long_es(
+            item.fechaInicio,
+            item.fechaFin
+        )
+        fecha_emision_larga = format_date_long_es(item.fechaEmision)
+        fecha_emision_corta = format_date_ddmmyyyy(item.fechaEmision)
+        # fecha_emision = format_date_long_es(item.fechaEmision)
+    else:
+        fecha_inicio = format_date_ddmmyyyy(item.fechaInicio)
+        fecha_fin = format_date_ddmmyyyy(item.fechaFin)
+        fecha_emision_larga = format_date_long_es(item.fechaEmision)
+        fecha_emision_corta = format_date_ddmmyyyy(item.fechaEmision)
+        # fecha_emision = format_date_ddmmyyyy(item.fechaEmision)
+    
+    nombre_posterior = nombre_completo_capitalizado(item.nombres, item.apellidos)
+    modulos = obtener_modulos_por_tema(tipo, item.temaDiplomado)
+    
+    ##horas de módulos correctamente distribuidas
+    cantidad_modulos = MODULOS_COUNT[tipo]
+
+    horas_por_modulo_global = calcular_horas_por_modulo(
+        item.horasAcademicas,
+        cantidad_modulos
+    )
+    
+    horas_por_modulo = distribuir_horas_por_modulo(
+        item.horasAcademicas,
+        cantidad_modulos
+    )
+
+    mapping = {
+        "{{MODELO}}": tipo,
+        "{{MODELO_MINUSCULA}}": modelo_con_mayuscula_inicial(tipo),
+
+        "{{NOMBRES}}": item.nombres.upper(),
+        "{{APELLIDOS}}": item.apellidos.upper(),
+        "{{TEMA_DIPLOMADO}}": item.temaDiplomado.upper(),
+
+        "{{NOMBRE_COMPLETO_MINUSCULA}}": nombre_posterior,
+
+        "{{FECHA_INICIO}}": fecha_inicio,
+        "{{FECHA_FIN}}": fecha_fin,
+
+        "{{HORAS_ACADEMICAS}}": format_two_digits_number(item.horasAcademicas),
+        "{{CREDITOS_ACADEMICOS}}": format_two_digits_float(item.creditosAcademicos),
+        
+        "{{HORAS_MODULO}}": horas_por_modulo_global,
+
+        "{{FOLIO_NUMERO}}": item.folioNumero,
+
+        "{{FECHA_EMISION_LARGA}}": fecha_emision_larga,
+        "{{FECHA_EMISION_CORTA}}": fecha_emision_corta,
+    }
+
+    for i, m in enumerate(modulos, start=1):
+        mapping[f"{{{{MODULO_{i}}}}}"] = m
+    
+    ##Agregar horas por módulo al mapping       
+    for i, h in enumerate(horas_por_modulo, start=1):
+        mapping[f"{{{{HORAS_MODULO_{i}}}}}"] = str(h)
+
+
+    replace_placeholders(prs, mapping)
+    
+    return prs
+
+
+# -------------------------------------------------
+# ENDPOINTS
+# -------------------------------------------------
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+# -------------------------------------------------
+# REGISTRO DE EVENTO DE USO (NO CRÍTICO)
+# -------------------------------------------------
+
+"""
+authorization:
+- Header Authorization enviado por Angular
+- Contiene Bearer <accessToken>
+- Se reutiliza para autenticar contra microservice-events
+"""
+@app.post("/api/diplomas")
+def generate_pptx_batch(
+    payload: BatchRequest,
+    access_token: str = Depends(validate_access_token),
+):
+    if not payload.items:
+        raise HTTPException(status_code=400, detail="items no puede estar vacío")
+
+    # ✅ Registrar apenas llega (token ya validado y fresco)
+    registrar_evento_uso(
+        token=access_token,
+        evento="PPTX_GENERATION_REQUEST",
+        items=len(payload.items),
+        origen="API_FASTAPI"
+    )
+
+    # 1. Generar presentaciones SIN QR
+    presentations: List[Presentation] = []
+    for item in payload.items:
+        prs = generar_presentacion_por_item(item)
+        presentations.append(prs)
+
+    # 2. Merge
+    merged = merge_presentations(presentations)
+
+    # 3. Insertar QR DESPUÉS del merge (clave)
+    for slide, item in zip(merged.slides, payload.items):
+        qr_url = build_qr_url(
+            item.nombres,
+            item.apellidos,
+            item.temaDiplomado
+        )
+        qr_image = generate_qr_image(qr_url)
+        insert_qr_at_placeholder(merged, qr_image)
+
+    # 4. Exportar
+    output = BytesIO()
+    merged.save(output)
+    output.seek(0)
+
+    filename = f"CERTIFICADOS_{int(datetime.now().timestamp())}.pptx"
+
+    return StreamingResponse(
+        output,
+        media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+    )
+
+
+
+También te brindo las urls de cada uno en railway y vercel :
+
+
+Railway :
+
+backend de la aplicación -> ipdebackendcertificados-production.up.railway.app
+backend de microservice-auth -> microservice-auth-production.up.railway.app
+backend de microservice-events -> microservice-events-production.up.railway.app
+
+
+Vercel :
+
+ipdefrontendcertificados.vercel.app

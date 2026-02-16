@@ -5,3 +5,5 @@ python-dotenv
 openai
 qrcode
 pillow
+requests
+python-jose

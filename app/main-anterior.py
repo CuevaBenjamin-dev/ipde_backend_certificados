@@ -16,13 +16,7 @@ from openai import OpenAI
 from copy import deepcopy
 from typing import List, Tuple
 import qrcode
-import requests
-from fastapi import Header
-from jose import jwt, JWTError
-from fastapi import Depends
-import logging
 
-logger = logging.getLogger("auth")
 
 # -------------------------------------------------
 # CONFIGURACIÓN GENERAL
@@ -80,53 +74,8 @@ MODULOS_CACHE: dict[Tuple[str, str], List[str]] = {}
 
 
 # -------------------------------------------------
-# CLIENTE PARA MICROSERVICE EVENTS
-# -------------------------------------------------
-
-"""
-Cliente HTTP para registrar eventos de uso.
-
-Este FastAPI NO guarda eventos directamente en BD.
-Delegamos el tracking al microservice-events para:
-- desacoplar métricas del negocio principal
-- permitir escalabilidad
-- centralizar estadísticas
-"""
-
-
-EVENTS_SERVICE_URL = os.getenv(
-    "EVENTS_SERVICE_URL",
-    "https://microservice-events-production.up.railway.app/api/events"
-)
-
-
-# -------------------------------------------------
 # UTILIDADES
 # -------------------------------------------------
-
-JWT_SECRET = os.getenv("JWT_SECRET")
-JWT_ALG = "HS256"
-
-
-def validate_access_token(authorization: str = Header(...)) -> str:
-    if not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Token inválido")
-
-    token = authorization.replace("Bearer ", "").strip()
-
-    try:
-        claims = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALG])
-    except JWTError:
-         # ⬇️ LOG SOLO EN DEBUG (no ensucia logs normales)
-        logger.debug("Access token expirado o inválido")
-        raise HTTPException(status_code=401, detail="Token expirado o inválido")
-
-    if claims.get("type") != "ACCESS":
-        raise HTTPException(status_code=401, detail="Token no es ACCESS")
-
-    # opcional: devolver username si lo necesitas
-    return token
-
 
 def safe_filename(text: str) -> str:
     text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
@@ -382,49 +331,7 @@ def distribuir_horas_por_modulo(total_horas: int, cantidad_modulos: int) -> List
     return horas
 
 
-# -------------------------------------------------
-# REGISTRO DE EVENTOS DE USO (MICROSERVICE-EVENTS)
-# -------------------------------------------------
 
-def registrar_evento_uso(
-    token: str,
-    evento: str,
-    items: int,
-    origen: str = "API_FASTAPI"
-):
-    """
-    Registra un evento de uso en microservice-events.
-
-    - token: AccessToken JWT recibido desde frontend
-    - evento: tipo de evento (PPTX_GENERATED, LOGIN, etc.)
-    - items: cantidad de elementos procesados
-    - origen: origen del evento (API_FASTAPI)
-    """
-
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "evento": evento,
-        "items": items,
-        "origen": origen
-    }
-    try:
-        r = requests.post(
-            EVENTS_SERVICE_URL,
-            json=payload,
-            headers=headers,
-            timeout=2
-        )
-        # ✅ LOG ÚTIL (solo debug, luego lo puedes bajar)
-        if r.status_code >= 400:
-            print(f"[WARN] Tracking falló {r.status_code}: {r.text}")
-    except Exception as e:
-        print(f"[WARN] No se pudo registrar evento: {e}")
-
-        
 
 # -------------------------------------------------
 # OPENAI – GENERACIÓN DE MÓDULOS DINÁMICA
@@ -492,9 +399,7 @@ def obtener_modulos_por_tema(tipo: str, tema: str) -> list[str]:
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200", 
-                   "ipdefrontendcertificados.vercel.app"
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -726,31 +631,11 @@ def generar_presentacion_por_item(item: DiplomaRequest) -> Presentation:
 def health():
     return {"status": "ok"}
 
-# -------------------------------------------------
-# REGISTRO DE EVENTO DE USO (NO CRÍTICO)
-# -------------------------------------------------
 
-"""
-authorization:
-- Header Authorization enviado por Angular
-- Contiene Bearer <accessToken>
-- Se reutiliza para autenticar contra microservice-events
-"""
 @app.post("/api/diplomas")
-def generate_pptx_batch(
-    payload: BatchRequest,
-    access_token: str = Depends(validate_access_token),
-):
+def generate_pptx_batch(payload: BatchRequest):
     if not payload.items:
         raise HTTPException(status_code=400, detail="items no puede estar vacío")
-
-    # ✅ Registrar apenas llega (token ya validado y fresco)
-    registrar_evento_uso(
-        token=access_token,
-        evento="PPTX_GENERATION_REQUEST",
-        items=len(payload.items),
-        origen="API_FASTAPI"
-    )
 
     # 1. Generar presentaciones SIN QR
     presentations: List[Presentation] = []
