@@ -1096,11 +1096,11 @@ def obtener_modelo_unico_del_lote(items: List[DiplomaRequest]) -> str:
     return modelo_base
 
 MODEL_FILENAME_LABELS = {
-    "INSTITUTO": "IPDE",
-    "UNIVERSIDAD_2QRS": "2QRS UNT",
-    "UNIVERSIDAD_AZUL": "UNT AZUL",
-    "COLEGIO_ABOGADOS_CALLAO": "CAC",
-    "COLEGIO_DE_PROFESORES_DEL_PERU": "CPP",
+    "INSTITUTO": "Instituto",
+    "UNIVERSIDAD_2QRS": "Universidad 2QRS",
+    "UNIVERSIDAD_AZUL": "Universidad Azul",
+    "COLEGIO_ABOGADOS_CALLAO": "Colegio de Abogados del Callao",
+    "COLEGIO_DE_PROFESORES_DEL_PERU": "Colegio de Profesores del Perú",
 }
 
 
