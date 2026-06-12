@@ -1,4 +1,981 @@
 {
-  "version": 1,
-  "items": {}
+  "version": 2,
+  "items": {
+    "8_MODULOS::inteligencia-artificial-aplicada-a-la-educacion": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "INTELIGENCIA ARTIFICIAL APLICADA A LA EDUCACIÓN",
+      "modulos": [
+        "FUNDAMENTOS DE INTELIGENCIA ARTIFICIAL EN CONTEXTOS EDUCATIVOS",
+        "APRENDIZAJE AUTOMÁTICO Y MODELOS PREDICTIVOS PARA LA ENSEÑANZA",
+        "PROCESAMIENTO DEL LENGUAJE NATURAL PARA EVALUACIÓN Y RETROALIMENTACIÓN",
+        "SISTEMAS DE TUTORÍA INTELIGENTE Y PERSONALIZACIÓN DEL APRENDIZAJE",
+        "DISEÑO INSTRUCCIONAL BASADO EN DATOS Y ANALÍTICA DE APRENDIZAJE",
+        "ÉTICA, PRIVACIDAD Y SESGOS EN APLICACIONES EDUCATIVAS DE IA",
+        "HERRAMIENTAS Y PLATAFORMAS DE IA PARA DOCENTES Y ADMINISTRADORES",
+        "IMPLEMENTACIÓN, EVALUACIÓN E INNOVACIÓN EN PROYECTOS EDUCATIVOS CON IA"
+      ],
+      "created_at": "2026-06-08T21:17:42",
+      "updated_at": "2026-06-08T21:17:42"
+    },
+    "8_MODULOS::tecnologias-de-la-informacion-y-la-comunicacion-tic": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "PROGRAMA DE ESPECIALIZACIÓN",
+      "tema_original": "Tecnologías de la Información y la Comunicación (TIC)",
+      "modulos": [
+        "FUNDAMENTOS DE LAS TECNOLOGÍAS DE LA INFORMACIÓN",
+        "SISTEMAS OPERATIVOS Y ADMINISTRACIÓN",
+        "REDES DE COMPUTADORAS Y COMUNICACIONES",
+        "SEGURIDAD INFORMÁTICA Y GESTIÓN DE RIESGOS",
+        "BASES DE DATOS Y GESTIÓN DE LA INFORMACIÓN",
+        "DESARROLLO DE SOFTWARE Y METODOLOGÍAS",
+        "SERVICIOS EN LA NUBE Y VIRTUALIZACIÓN",
+        "ÉTICA, LEGISLACIÓN Y GOBERNANZA TIC"
+      ],
+      "created_at": "2026-06-08T21:23:48",
+      "updated_at": "2026-06-08T21:23:48"
+    },
+    "8_MODULOS::adquisicion-y-perdida-de-la-propiedad": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Adquisición y pérdida de la propiedad",
+      "modulos": [
+        "FUNDAMENTOS DEL DERECHO DE PROPIEDAD",
+        "MODOS DE ADQUISICIÓN DE LA PROPIEDAD",
+        "REGISTRO Y TRANSMISIÓN DE LA PROPIEDAD",
+        "CONTRATOS TRASLATIVOS DE DOMINIO",
+        "PRESCRIPCIÓN ADQUISITIVA Y EXTINTIVA",
+        "PATRIMONIO Y LÍMITES DE LA PROPIEDAD",
+        "PÉRDIDA DE LA PROPIEDAD POR EXPROPIACIÓN",
+        "RESOLUCIÓN DE CONFLICTOS Y PROTECCIÓN POSESORIA"
+      ],
+      "created_at": "2026-06-09T20:53:26",
+      "updated_at": "2026-06-09T20:53:26"
+    },
+    "8_MODULOS::indemnizacion-y-reparacion-de-danos": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Indemnización y reparación de daños",
+      "modulos": [
+        "FUNDAMENTOS JURÍDICOS DE LA RESPONSABILIDAD CIVIL",
+        "TIPOS DE DAÑOS Y SU CLASIFICACIÓN",
+        "CAUSALIDAD Y NEXO CAUSAL EN LA INDEMNIZACIÓN",
+        "MÉTODOS DE VALORACIÓN DEL DAÑO MATERIAL Y PATRIMONIAL",
+        "INDEMNIZACIÓN POR DAÑO MORAL Y PERJUICIOS INMATERIALES",
+        "PROCEDIMIENTOS JUDICIALES Y EXTRAJUDICIALES DE REPARACIÓN",
+        "SEGUROS RESPONSABILIDAD CONTRACTUAL Y EXTRACONTRACTUAL",
+        "RESTITUCIÓN Y REPARACIÓN INTEGRAL CON MEDIDAS CAUTELARES"
+      ],
+      "created_at": "2026-06-09T20:53:37",
+      "updated_at": "2026-06-09T20:53:37"
+    },
+    "8_MODULOS::violencia-contra-las-mujeres-e-integrantes-del-grupo-familiar-ley-30364": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "VIOLENCIA CONTRA LAS MUJERES E INTEGRANTES DEL GRUPO FAMILIAR (LEY 30364)",
+      "modulos": [
+        "MARCO LEGAL DE LA LEY 30364 Y NORMAS COMPLEMENTARIAS",
+        "CONCEPTOS Y TIPOS DE VIOLENCIA CONTRA MUJERES Y GRUPO FAMILIAR",
+        "PREVENCIÓN Y POLÍTICAS PÚBLICAS PARA LA PROTECCIÓN DE DERECHOS",
+        "ATENCIÓN INTEGRAL A VÍCTIMAS: PROTOCOLOS Y SERVICIOS ESPECIALIZADOS",
+        "MEDIDAS DE PROTECCIÓN JUDICIAL Y ADMINISTRATIVAS",
+        "ROLES Y RESPONSABILIDADES DE INSTITUCIONES PÚBLICAS Y SOCIEDAD CIVIL",
+        "ACCESO A JUSTICIA, INVESTIGACIÓN Y SANCIÓN DE AGRESORES",
+        "SENSIBILIZACIÓN, FORMACIÓN Y ESTRATEGIAS PARA ELIMINACIÓN DE VIOLENCIA"
+      ],
+      "created_at": "2026-06-10T03:13:17",
+      "updated_at": "2026-06-10T03:13:17"
+    },
+    "8_MODULOS::litigacion-penal-y-juicio-oral": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "LITIGACIÓN PENAL Y JUICIO ORAL",
+      "modulos": [
+        "FUNDAMENTOS DEL DERECHO PENAL Y DEL PROCESO PENAL",
+        "INVESTIGACIÓN CRIMINAL Y RECOLECCIÓN DE PRUEBAS",
+        "TÉCNICAS DE FORMULACIÓN DE ACUSACIÓN Y DEFENSA PENAL",
+        "MEDIOS DE PRUEBA EN JUICIO ORAL",
+        "PREPARACIÓN Y CONDUCCIÓN DEL INTERROGATORIO Y CONTRAINTERROGATORIO",
+        "AUDIENCIAS PRELIMINARES Y GESTIÓN PROBATORIA",
+        "TÉCNICAS DE LITIGACIÓN ORAL Y ARGUMENTACIÓN JURÍDICA",
+        "ÉTICA, DERECHOS HUMANOS Y GARANTÍAS PROCESALES EN JUICIO"
+      ],
+      "created_at": "2026-06-10T03:13:25",
+      "updated_at": "2026-06-10T03:13:25"
+    },
+    "8_MODULOS::procedimiento-administrativo-general-ley-2744": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Procedimiento administrativo general ley - 2744",
+      "modulos": [
+        "FUNDAMENTOS Y PRINCIPIOS DEL PROCEDIMIENTO ADMINISTRATIVO GENERAL",
+        "SUJETOS, COMPETENCIA Y ÓRGANOS ADMINISTRATIVOS",
+        "INICIO DEL PROCEDIMIENTO Y ACTOS DE TRÁMITE",
+        "GARANTÍAS PROCESALES, AUDIENCIA Y DERECHO DE DEFENSA",
+        "PRUEBA ADMINISTRATIVA, VALORACIÓN Y MEDIOS PROBATORIOS",
+        "RESOLUCIÓN ADMINISTRATIVA: MOTIVACIÓN, FORMA Y EFECTOS",
+        "RECURSOS ADMINISTRATIVOS Y PROCEDIMIENTOS DE IMPUGNACIÓN",
+        "EJECUCIÓN, REVISIÓN JUDICIAL Y RESPONSABILIDAD ADMINISTRATIVA"
+      ],
+      "created_at": "2026-06-10T15:38:06",
+      "updated_at": "2026-06-10T15:38:06"
+    },
+    "8_MODULOS::proceso-contencioso-administrativo": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Proceso contencioso administrativo",
+      "modulos": [
+        "FUNDAMENTOS DEL PROCESO CONTENCIOSO ADMINISTRATIVO",
+        "JURISDICCIÓN Y COMPETENCIA EN LA JUSTICIA ADMINISTRATIVA",
+        "LEGITIMACIÓN ACTIVA Y PASIVA EN PROCESOS ADMINISTRATIVOS",
+        "PROCEDIMIENTO ORDINARIO CONTENCIOSO ADMINISTRATIVO",
+        "MEDIDAS CAUTELARES Y SUSPENSIÓN DE ACTOS ADMINISTRATIVOS",
+        "PRUEBAS Y VALORACIÓN PROBATORIA EN LO CONTENCIOSO ADMINISTRATIVO",
+        "RECURSOS EXTRAORDINARIOS Y REVISIÓN JUDICIAL DE ACTOS ADMINISTRATIVOS",
+        "EJECUCIÓN DE SENTENCIAS Y RESPONSABILIDAD PATRIMONIAL DEL ESTADO"
+      ],
+      "created_at": "2026-06-10T15:38:21",
+      "updated_at": "2026-06-10T15:38:21"
+    },
+    "8_MODULOS::responsabilidad-civil-y-penal-de-funcionarios": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Responsabilidad civil y penal de funcionarios",
+      "modulos": [
+        "MARCO JURÍDICO DE LA FUNCIÓN PÚBLICA",
+        "RESPONSABILIDAD PENAL DE LOS FUNCIONARIOS PÚBLICOS",
+        "DELITOS COMUNES EN LA ADMINISTRACIÓN PÚBLICA",
+        "RESPONSABILIDAD CIVIL DERIVADA DE ACTOS ADMINISTRATIVOS",
+        "PROCEDIMIENTOS DISCIPLINARIOS Y GARANTÍAS PROCESALES",
+        "INVESTIGACIÓN DE ILÍCITOS Y COLABORACIÓN JUDICIAL",
+        "REPARACIÓN DEL DAÑO Y MEDIDAS DE RESTITUCIÓN",
+        "PREVENCIÓN, ÉTICA Y CUMPLIMIENTO NORMATIVO EN EL SECTOR PÚBLICO"
+      ],
+      "created_at": "2026-06-10T15:38:30",
+      "updated_at": "2026-06-10T15:38:30"
+    },
+    "8_MODULOS::servicio-civil-y-recursos-humanos-en-el-estado": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Servicio civil y recursos humanos en el estado",
+      "modulos": [
+        "INTRODUCCIÓN AL SERVICIO CIVIL Y FUNCIÓN PÚBLICA",
+        "MARCO LEGAL Y NORMATIVO DEL EMPLEO PÚBLICO",
+        "RECLUTAMIENTO, SELECCIÓN Y CONTRATACIÓN EN EL ESTADO",
+        "GESTIÓN DEL DESEMPEÑO Y EVALUACIÓN DEL PERSONAL",
+        "DESARROLLO PROFESIONAL Y CAPACITACIÓN EN LA ADMINISTRACIÓN PÚBLICA",
+        "REMUNERACIONES, BENEFICIOS Y CLASIFICACIÓN DE PUESTOS",
+        "ÉTICA PÚBLICA, INTEGRIDAD Y RESPONSABILIDAD ADMINISTRATIVA",
+        "RELACIONES LABORALES, NEGOCIACIÓN COLECTIVA Y RESOLUCIÓN DE CONFLICTOS"
+      ],
+      "created_at": "2026-06-10T15:38:42",
+      "updated_at": "2026-06-10T15:38:42"
+    },
+    "8_MODULOS::transparencia-y-acceso-a-la-informacion-publica": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Transparencia y acceso a la información pública",
+      "modulos": [
+        "MARCO NORMATIVO DE LA TRANSPARENCIA Y ACCESO A LA INFORMACIÓN PÚBLICA",
+        "PRINCIPIOS Y RESPONSABILIDADES DE LAS AUTORIDADES PÚBLICAS",
+        "PROCEDIMIENTO DE SOLICITUD Y ENTREGA DE INFORMACIÓN PÚBLICA",
+        "EXCEPCIONES Y RESTRICCIONES AL ACCESO A LA INFORMACIÓN",
+        "PROTECCIÓN DE DATOS PERSONALES Y TRANSPARENCIA",
+        "TRANSPARENCIA PROACTIVA Y PUBLICACIÓN DE DATOS ABIERTOS",
+        "MECANISMOS DE VIGILANCIA, SANCIONES Y RENDICIÓN DE CUENTAS",
+        "RECURSOS DE IMPUGNACIÓN Y PROCEDIMIENTOS ANTE AUTORIDADES"
+      ],
+      "created_at": "2026-06-10T15:38:53",
+      "updated_at": "2026-06-10T15:38:53"
+    },
+    "8_MODULOS::andragogia-y-docencia-en-eba": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "PROGRAMA DE ESPECIALIZACIÓN",
+      "tema_original": "Andragogia y docencia en EBA",
+      "modulos": [
+        "FUNDAMENTOS DE LA ANDRAGOGÍA Y APRENDIZAJE DE ADULTOS",
+        "TEORÍAS DEL APRENDIZAJE Y DISEÑO INSTRUCCIONAL PARA ADULTOS",
+        "PLANEAMIENTO CURRICULAR Y ADAPTACIÓN EN EDUCACIÓN BÁSICA ALTERNATIVA",
+        "ESTRATEGIAS METODOLÓGICAS PARTICIPATIVAS EN LA ENSEÑANZA PARA ADULTOS",
+        "EVALUACIÓN FORMATIVA, SUMATIVA Y RETROALIMENTACIÓN EN EBA",
+        "INCLUSIÓN, INTERCULTURALIDAD Y DIVERSIDAD EN CONTEXTOS DE ADULTOS",
+        "GESTIÓN DEL AULA, TUTORÍA Y ORIENTACIÓN EN EDUCACIÓN DE ADULTOS",
+        "INTEGRACIÓN DE TECNOLOGÍAS Y RECURSOS DIDÁCTICOS EN EBA"
+      ],
+      "created_at": "2026-06-10T15:45:59",
+      "updated_at": "2026-06-10T15:45:59"
+    },
+    "8_MODULOS::docencia-andragogia-y-estrategias-pedagogicas-en-eba": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "PROGRAMA DE ESPECIALIZACIÓN",
+      "tema_original": "docencia Andragogia y estrategias pedagógicas en EBA",
+      "modulos": [
+        "FUNDAMENTOS DE LA ANDRAGOGÍA Y TEORÍAS DEL APRENDIZAJE ADULTO",
+        "DISEÑO CURRICULAR PARA EDUCACIÓN BÁSICA ALTERNATIVA",
+        "ESTRATEGIAS PEDAGÓGICAS CENTRADAS EN EL APRENDIZAJE SIGNIFICATIVO",
+        "EVALUACIÓN FORMATIVA Y RETROALIMENTACIÓN EN CONTEXTOS EBA",
+        "INCLUSIÓN, DIVERSIDAD Y ATENCIÓN A ESTUDIANTES ADULTOS CON NECESIDADES",
+        "PLANIFICACIÓN DE UNIDADES DIDÁCTICAS ORIENTADAS A COMPETENCIAS",
+        "USO DE TECNOLOGÍAS Y RECURSOS DIGITALES EN LA ENSEÑANZA ADULTA",
+        "PRÁCTICA PEDAGÓGICA SUPERVISADA Y PROYECTOS DE INTERVENCIÓN EDUCATIVA"
+      ],
+      "created_at": "2026-06-10T15:46:10",
+      "updated_at": "2026-06-10T15:46:10"
+    },
+    "8_MODULOS::didactica-de-la-educacion-basica-alternativa": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "PROGRAMA DE ESPECIALIZACIÓN",
+      "tema_original": "didáctica de la educación básica alternativa",
+      "modulos": [
+        "FUNDAMENTOS TEÓRICOS DE LA EDUCACIÓN BÁSICA ALTERNATIVA",
+        "MARCO LEGAL Y POLÍTICAS PARA LA EDUCACIÓN BÁSICA ALTERNATIVA",
+        "DISEÑO CURRICULAR Y PLANIFICACIÓN DE SECUENCIAS DIDÁCTICAS",
+        "ESTRATEGIAS PEDAGÓGICAS INCLUSIVAS Y DIVERSIFICACIÓN DE LA ENSEÑANZA",
+        "EVALUACIÓN FORMATIVA Y ACREDITACIÓN DE APRENDIZAJES",
+        "DIDÁCTICA ESPECÍFICA PARA COMUNICACIÓN MATEMÁTICA Y CIENCIAS",
+        "GESTIÓN DEL AULA CONVIVENCIA Y PARTICIPACIÓN COMUNITARIA",
+        "USO DE TECNOLOGÍAS Y RECURSOS EDUCATIVOS COMUNITARIOS"
+      ],
+      "created_at": "2026-06-10T15:46:29",
+      "updated_at": "2026-06-10T15:46:29"
+    },
+    "8_MODULOS::metodologias-para-la-ensenanza-en-eba": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "PROGRAMA DE ESPECIALIZACIÓN",
+      "tema_original": "metodologías para la enseñanza en EBA",
+      "modulos": [
+        "FUNDAMENTOS DE LA ENSEÑANZA EN EDUCACIÓN BÁSICA DE ADULTOS",
+        "PRINCIPIOS DE APRENDIZAJE DE ADULTOS Y ANDRAGOGÍA APLICADA",
+        "DISEÑO CURRICULAR CONTEXTUALIZADO PARA PROGRAMAS DE EBA",
+        "ESTRATEGIAS DIDÁCTICAS PARTICIPATIVAS Y BASADAS EN PROYECTOS",
+        "EVALUACIÓN FORMATIVA, ACREDITACIÓN Y TRAYECTORIAS EDUCATIVAS",
+        "TECNOLOGÍA EDUCATIVA Y RECURSOS DIGITALES PARA LA ENSEÑANZA EN EBA",
+        "INCLUSIÓN, DIVERSIDAD Y ATENCIÓN A ESTUDIANTES VULNERABLES EN EBA",
+        "GESTIÓN DEL AULA, NEGOCIACIÓN Y VÍNCULO COMUNITARIO EN EBA"
+      ],
+      "created_at": "2026-06-10T15:46:39",
+      "updated_at": "2026-06-10T15:46:39"
+    },
+    "5_MODULOS::programacion-curricular-y-gestion-del-aula-en-eba": {
+      "grupo": "5_MODULOS",
+      "tipo_referencia": "CURSO",
+      "tema_original": "programación curricular y gestión del aula en EBA",
+      "modulos": [
+        "FUNDAMENTOS DE LA PROGRAMACIÓN CURRICULAR EN EDUCACIÓN BÁSICA ALTERNATIVA",
+        "DISEÑO Y SECUENCIACIÓN DE UNIDADES DIDÁCTICAS PARA EBA",
+        "EVALUACIÓN, SEGUIMIENTO Y ACREDITACIÓN DEL APRENDIZAJE EN EBA",
+        "ESTRATEGIAS PEDAGÓGICAS Y METODOLOGÍAS FLEXIBLES PARA ESTUDIANTES ADULTOS",
+        "GESTIÓN DEL AULA, CONVIVENCIA Y APOYO SOCIOEMOCIONAL EN EBA"
+      ],
+      "created_at": "2026-06-10T15:46:46",
+      "updated_at": "2026-06-10T15:46:46"
+    },
+    "8_MODULOS::docencia-superior": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "DOCENCIA SUPERIOR",
+      "modulos": [
+        "FUNDAMENTOS DE LA PEDAGOGÍA UNIVERSITARIA",
+        "DISEÑO CURRICULAR Y PLANIFICACIÓN DE ASIGNATURAS",
+        "METODOLOGÍAS ACTIVAS Y APRENDIZAJE CENTRADO EN EL ESTUDIANTE",
+        "EVALUACIÓN DEL APRENDIZAJE Y RETROALIMENTACIÓN FORMATIVA",
+        "TECNOLOGÍAS EDUCATIVAS Y ENSEÑANZA EN ENTORNOS VIRTUALES",
+        "INVESTIGACIÓN EDUCATIVA PARA LA MEJORA DE LA PRÁCTICA DOCENTE",
+        "COMPETENCIAS DOCENTES Y DESARROLLO PROFESIONAL CONTINUO",
+        "ÉTICA, INCLUSIÓN Y ATENCIÓN A LA DIVERSIDAD EN LA UNIVERSIDAD"
+      ],
+      "created_at": "2026-06-10T16:17:03",
+      "updated_at": "2026-06-10T16:17:03"
+    },
+    "8_MODULOS::derecho-civil-y-procesal-civil": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "DERECHO CIVIL Y PROCESAL CIVIL",
+      "modulos": [
+        "PRINCIPIOS Y FUENTES DEL DERECHO CIVIL",
+        "PERSONAS Y CAPACIDAD JURÍDICA",
+        "DERECHO DE FAMILIA: MATRIMONIO, FILIACIÓN Y PATRIA POTESTAD",
+        "BIENES, DOMINIO Y DERECHOS REALES",
+        "OBLIGACIONES Y CONTRATOS EN EL DERECHO CIVIL",
+        "RESPONSABILIDAD CIVIL Y REPARACIÓN DEL DAÑO",
+        "SUCESIONES Y DERECHO HEREDITARIO",
+        "PROCESO CIVIL: JURISDICCIÓN, COMPETENCIA Y PARTES"
+      ],
+      "created_at": "2026-06-10T16:32:01",
+      "updated_at": "2026-06-10T16:32:01"
+    },
+    "8_MODULOS::derecho-procesal-civil": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Derecho procesal civil",
+      "modulos": [
+        "PRINCIPIOS Y FUENTES DEL DERECHO PROCESAL CIVIL",
+        "JURISDICCIÓN Y COMPETENCIA EN EL PROCESO CIVIL",
+        "PARTES PROCESALES, CAPACIDAD Y REPRESENTACIÓN",
+        "ACTOS PROCESALES Y TÉRMINOS JUDICIALES",
+        "MEDIOS DE PRUEBA Y VALORACIÓN PROBATORIA",
+        "MEDIDAS CAUTELARES Y TUTELA PREVENTIVA",
+        "RECURSOS ORDINARIOS Y EXTRAORDINARIOS EN EL PROCESO CIVIL",
+        "EJECUCIÓN DE RESOLUCIONES Y CUMPLIMIENTO DE SENTENCIAS"
+      ],
+      "created_at": "2026-06-10T16:45:38",
+      "updated_at": "2026-06-10T16:45:38"
+    },
+    "8_MODULOS::derecho-procesal-penal": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Derecho procesal penal",
+      "modulos": [
+        "FUNDAMENTOS DEL DERECHO PROCESAL PENAL",
+        "PRINCIPIOS CONSTITUCIONALES DEL PROCESO PENAL",
+        "INVESTIGACIÓN CRIMINAL Y FASE PRELIMINAR",
+        "MEDIDAS CAUTELARES Y DETENCIÓN PREVENTIVA",
+        "ETAPA INTERMEDIA Y CONTROL DE ACUSACIÓN",
+        "JUICIO ORAL Y PRUEBAS",
+        "RECURSOS Y VÍAS IMPUGNATORIAS EN MATERIA PENAL",
+        "EJECUCIÓN DE LA SENTENCIA Y REPARACIÓN INTEGRAL"
+      ],
+      "created_at": "2026-06-10T16:45:52",
+      "updated_at": "2026-06-10T16:45:52"
+    },
+    "8_MODULOS::delitos-contra-la-administracion-publica": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Delitos contra la administración pública",
+      "modulos": [
+        "CORRUPCIÓN Y RESPONSABILIDAD PENAL EN LA ADMINISTRACIÓN PÚBLICA",
+        "MALVERSACIÓN DE FONDOS PÚBLICOS: ELEMENTOS Y SANCIONES PENALES",
+        "PREVARICACIÓN ADMINISTRATIVA: CONCEPTO, TIPOS Y CONSECUENCIAS JURÍDICAS",
+        "COHECHO Y SOBORNO: ANÁLISIS DEL DELITO ACTIVO Y PASIVO",
+        "TRÁFICO DE INFLUENCIAS: CONDUCTAS, SUJETOS Y PRUEBAS",
+        "FRAUDE EN LA CONTRATACIÓN PÚBLICA Y ADJUDICACIONES IRREGULARES",
+        "RESPONSABILIDAD PENAL DE LAS EMPRESAS Y COOPERACIÓN PENAL",
+        "MEDIDAS PREVENTIVAS, COMPLIANCE Y CONTROL INTERNO EN LA ADMINISTRACIÓN"
+      ],
+      "created_at": "2026-06-10T16:46:04",
+      "updated_at": "2026-06-10T16:46:04"
+    },
+    "8_MODULOS::argumentacion-juridica-en-el-proceso-civil": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Argumentación jurídica en el proceso civil",
+      "modulos": [
+        "FUNDAMENTOS DE LA ARGUMENTACIÓN JURÍDICA EN EL PROCESO CIVIL",
+        "TEORÍA DEL DERECHO Y TÉCNICAS DE RAZONAMIENTO JURÍDICO",
+        "ESTRUCTURA DE LOS ARGUMENTOS Y FALACIAS PROCESALES",
+        "PRUEBA Y CARGA PROBATORIA: ARGUMENTOS EN JUICIO CIVIL",
+        "TÉCNICAS DE PERSUASIÓN Y RETÓRICA JURÍDICA EN AUDIENCIAS",
+        "REDACCIÓN DE ESCRITOS PROCESALES ALEGATOS Y RECURSOS",
+        "PRÁCTICA NORMATIVA Y PRECEDENTES EN LA ARGUMENTACIÓN CIVIL",
+        "ÉTICA PROFESIONAL Y LÍMITES DE LA ARGUMENTACIÓN JUDICIAL"
+      ],
+      "created_at": "2026-06-10T16:52:11",
+      "updated_at": "2026-06-10T16:52:11"
+    },
+    "8_MODULOS::gestion-publica": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Gestión pública",
+      "modulos": [
+        "FUNDAMENTOS DE LA GESTIÓN PÚBLICA",
+        "POLÍTICAS PÚBLICAS Y CICLO DE POLÍTICAS",
+        "ADMINISTRACIÓN FINANCIERA PÚBLICA",
+        "CONTRATACIÓN Y COMPRAS PÚBLICAS",
+        "GESTIÓN DEL TALENTO HUMANO EN EL SECTOR PÚBLICO",
+        "ÉTICA, TRANSPARENCIA Y LUCHA CONTRA LA CORRUPCIÓN",
+        "PLANIFICACIÓN ESTRATÉGICA Y GESTIÓN POR RESULTADOS",
+        "INNOVACIÓN Y GOBIERNO DIGITAL"
+      ],
+      "created_at": "2026-06-10T16:52:23",
+      "updated_at": "2026-06-10T16:52:23"
+    },
+    "8_MODULOS::ingles-intermedio-b1": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "PROGRAMA DE ESPECIALIZACIÓN",
+      "tema_original": "INGLÉS INTERMEDIO B1",
+      "modulos": [
+        "FUNDAMENTOS GRAMATICALES Y TIEMPOS VERBALES BÁSICOS",
+        "VOCABULARIO COTIDIANO Y EXPRESIONES COMUNES",
+        "COMPRENSIÓN AUDITIVA: CONVERSACIONES Y ANUNCIOS BREVES",
+        "EXPRESIÓN ORAL: DESCRIBIR EXPERIENCIAS Y OPINIONES",
+        "LECTURA: TEXTOS ADAPTADOS Y ESTRATEGIAS DE COMPRENSIÓN",
+        "ESCRITURA: CORREOS, NOTAS Y TEXTOS NARRATIVOS CORTOS",
+        "HABILIDADES DE INTERACCIÓN Y COMUNICACIÓN EN EL TRABAJO",
+        "PREPARACIÓN PARA EXÁMENES B1 Y PRÁCTICAS DE EVALUACIÓN"
+      ],
+      "created_at": "2026-06-10T17:23:09",
+      "updated_at": "2026-06-10T17:23:09"
+    },
+    "8_MODULOS::derechos-humanos-y-derecho-procesal-constitucional": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Derechos Humanos y Derecho Procesal Constitucional",
+      "modulos": [
+        "FUNDAMENTOS Y TEORÍAS CONTEMPORÁNEAS DE LOS DERECHOS HUMANOS",
+        "SISTEMA INTERNACIONAL Y MECANISMOS DE PROTECCIÓN REGIONAL",
+        "DERECHOS ECONÓMICOS, SOCIALES Y CULTURALES: PROTECCIÓN Y CUMPLIMIENTO",
+        "CONTROL DE CONVENCIONALIDAD Y RELACIÓN ENTRE ORDENAMIENTOS JURÍDICOS",
+        "ACCIONES CONSTITUCIONALES DE PROTECCIÓN: AMPARO, TUTELA Y HÁBEAS CORPUS",
+        "MEDIDAS CAUTELARES Y PROVISIONALES EN PROCESAL CONSTITUCIONAL",
+        "PRUEBAS, ESTÁNDARES DE REVISIÓN Y TUTELA JUDICIAL EFECTIVA",
+        "LITIGIO ESTRATÉGICO Y REPARACIÓN INTEGRAL DE LAS VÍCTIMAS"
+      ],
+      "created_at": "2026-06-10T20:50:48",
+      "updated_at": "2026-06-10T20:50:48"
+    },
+    "8_MODULOS::manejo-de-resolucion-de-conflictos-sociales": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "manejo de resolución de conflictos sociales",
+      "modulos": [
+        "FUNDAMENTOS TEÓRICOS DE LA RESOLUCIÓN DE CONFLICTOS SOCIALES",
+        "COMUNICACIÓN ASERTIVA Y ESCUCHA ACTIVA EN CONFLICTOS",
+        "NEGOCIACIÓN Y TÉCNICAS DE RESOLUCIÓN COLABORATIVA",
+        "MEDIACIÓN COMUNITARIA: PROCESOS Y BUENAS PRÁCTICAS",
+        "JUSTICIA RESTAURATIVA EN CONTEXTOS SOCIALES",
+        "COMPETENCIA CULTURAL Y GESTIÓN DE DIVERSIDAD EN MEDIACIÓN",
+        "PREVENCIÓN DE CONFLICTOS Y CONSTRUCCIÓN DE PAZ LOCAL",
+        "EVALUACIÓN DE INTERVENCIONES Y ÉTICA PROFESIONAL"
+      ],
+      "created_at": "2026-06-10T20:50:55",
+      "updated_at": "2026-06-10T20:50:55"
+    },
+    "8_MODULOS::conciliacion-especializada-de-prevencion-y-negociacion-de-conflictos-dirigidos-a-servidores-publicos": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Conciliación especializada de prevención y negociación de conflictos dirigidos a servidores públicos",
+      "modulos": [
+        "FUNDAMENTOS DE LA CONCILIACIÓN EN EL SECTOR PÚBLICO",
+        "MARCO LEGAL Y NORMATIVO PARA SERVIDORES PÚBLICOS",
+        "ESTRATEGIAS DE PREVENCIÓN DE CONFLICTOS INSTITUCIONALES",
+        "TÉCNICAS DE NEGOCIACIÓN Y RESOLUCIÓN COLABORATIVA",
+        "COMUNICACIÓN EFECTIVA Y GESTIÓN EMOCIONAL EN CONCILIACIÓN",
+        "MEDIACIÓN ADMINISTRATIVA Y PROCEDIMIENTOS INTERNOS",
+        "ÉTICA, TRANSPARENCIA Y RENDICIÓN DE CUENTAS EN CONCILIACIÓN",
+        "DISEÑO E IMPLEMENTACIÓN DE PROGRAMAS INSTITUCIONALES DE CONCILIACIÓN"
+      ],
+      "created_at": "2026-06-10T20:51:04",
+      "updated_at": "2026-06-10T20:51:08"
+    },
+    "8_MODULOS::atencion-al-cliente-al-ciudadano-en-el-sector-publico": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "atención al cliente, al ciudadano en el sector público",
+      "modulos": [
+        "FUNDAMENTOS DE ATENCIÓN AL CIUDADANO EN EL SECTOR PÚBLICO",
+        "COMUNICACIÓN EFECTIVA Y HABILIDADES INTERPERSONALES CON USUARIOS",
+        "GESTIÓN DE QUEJAS Y RESOLUCIÓN DE CONFLICTOS EN SERVICIOS PÚBLICOS",
+        "MARCO LEGAL Y DERECHOS DEL CIUDADANO EN LA ADMINISTRACIÓN PÚBLICA",
+        "ÉTICA, TRANSPARENCIA Y ATENCIÓN IMPARCIAL EN EL SERVICIO PÚBLICO",
+        "HERRAMIENTAS DIGITALES Y CANALES DE ATENCIÓN CIUDADANA",
+        "DISEÑO Y MEJORA DE PROCESOS CENTRADOS EN EL USUARIO PÚBLICO",
+        "MEDICIÓN DE CALIDAD Y EVALUACIÓN DE LA SATISFACCIÓN CIUDADANA"
+      ],
+      "created_at": "2026-06-10T20:59:25",
+      "updated_at": "2026-06-10T20:59:25"
+    },
+    "5_MODULOS::fundamentos-de-la-gestion-publica": {
+      "grupo": "5_MODULOS",
+      "tipo_referencia": "CURSO",
+      "tema_original": "Fundamentos de la gestión pública",
+      "modulos": [
+        "INTRODUCCIÓN A LA GESTIÓN PÚBLICA Y EL ESTADO",
+        "MARCO JURÍDICO Y REGULATORIO DE LA ADMINISTRACIÓN PÚBLICA",
+        "FORMULACIÓN, IMPLEMENTACIÓN Y EVALUACIÓN DE POLÍTICAS PÚBLICAS",
+        "GESTIÓN FINANCIERA PÚBLICA Y POLÍTICA PRESUPUESTARIA",
+        "ÉTICA, TRANSPARENCIA Y RENDICIÓN DE CUENTAS EN EL SECTOR PÚBLICO"
+      ],
+      "created_at": "2026-06-10T21:12:38",
+      "updated_at": "2026-06-10T21:12:38"
+    },
+    "5_MODULOS::transparencia-y-lucha-contra-la-corrupcion": {
+      "grupo": "5_MODULOS",
+      "tipo_referencia": "CURSO",
+      "tema_original": "Transparencia y lucha contra la corrupción",
+      "modulos": [
+        "FUNDAMENTOS DE TRANSPARENCIA PÚBLICA Y ÉTICA GUBERNAMENTAL",
+        "MARCO LEGAL INTERNACIONAL Y NACIONAL CONTRA LA CORRUPCIÓN",
+        "GESTIÓN DEL RIESGO DE CORRUPCIÓN Y EVALUACIÓN DE INTEGRIDAD",
+        "MECANISMOS DE TRANSPARENCIA, ACCESO A LA INFORMACIÓN Y RENDICIÓN DE CUENTAS",
+        "PREVENCIÓN, DETECCIÓN E INVESTIGACIÓN DE ACTOS CORRUPTOS"
+      ],
+      "created_at": "2026-06-10T21:12:46",
+      "updated_at": "2026-06-10T21:12:46"
+    },
+    "5_MODULOS::atencion-al-ciudadano": {
+      "grupo": "5_MODULOS",
+      "tipo_referencia": "CURSO",
+      "tema_original": "Atención al ciudadano",
+      "modulos": [
+        "FUNDAMENTOS DE ATENCIÓN AL CIUDADANO",
+        "COMUNICACIÓN EFECTIVA Y TRATO AL PÚBLICO",
+        "GESTIÓN DE QUEJAS Y RESOLUCIÓN DE CONFLICTOS",
+        "ÉTICA, TRANSPARENCIA Y PROTECCIÓN DE DATOS PERSONALES",
+        "SISTEMAS, TRÁMITES Y ATENCIÓN DIGITAL AL CIUDADANO"
+      ],
+      "created_at": "2026-06-10T21:12:55",
+      "updated_at": "2026-06-10T21:12:55"
+    },
+    "5_MODULOS::inspeccion-tecnica-y-peritaje-automotriz": {
+      "grupo": "5_MODULOS",
+      "tipo_referencia": "CURSO_DE_ACTUALIZACION",
+      "tema_original": "inspección técnica y peritaje automotriz",
+      "modulos": [
+        "FUNDAMENTOS DE INSPECCIÓN TÉCNICA VEHICULAR",
+        "LEGISLACIÓN Y NORMATIVA DE SEGURIDAD VIAL Y HOMOLOGACIÓN",
+        "SISTEMAS MECÁNICOS Y TRANSMISIÓN: DIAGNÓSTICO Y VERIFICACIÓN",
+        "SISTEMAS ELÉCTRICOS Y ELECTRÓNICA A BORDO: PRUEBAS Y MEDICIONES",
+        "ELABORACIÓN DE INFORMES PERICIALES Y VALORACIÓN DE DAÑOS"
+      ],
+      "created_at": "2026-06-10T23:21:57",
+      "updated_at": "2026-06-10T23:21:57"
+    },
+    "8_MODULOS::reparacion-y-optimizacion-de-motores": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Reparación y optimización de motores",
+      "modulos": [
+        "FUNDAMENTOS DE MOTORES DE COMBUSTIÓN INTERNA",
+        "SISTEMAS DE ALIMENTACIÓN E INYECCIÓN DE COMBUSTIBLE",
+        "SISTEMAS DE LUBRICACIÓN, REFRIGERACIÓN Y CONTROL TÉRMICO",
+        "ELECTRÓNICA, GESTIÓN MOTOR Y DIAGNÓSTICO OBD",
+        "TÉCNICAS DE DESMONTAJE, MONTAJE Y ALINEACIÓN DE COMPONENTES",
+        "MANTENIMIENTO PREVENTIVO, AJUSTES Y REPARACIÓN BÁSICA",
+        "OPTIMIZACIÓN DEL RENDIMIENTO, PUESTA A PUNTO Y CALIBRACIÓN",
+        "EMISIONES, NORMATIVA AMBIENTAL Y TÉCNICAS DE REDUCCIÓN CONTAMINANTE"
+      ],
+      "created_at": "2026-06-10T23:22:05",
+      "updated_at": "2026-06-10T23:22:05"
+    },
+    "8_MODULOS::mecanica-automotriz-integral": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "PROGRAMA DE ESPECIALIZACIÓN",
+      "tema_original": "Mecánica automotriz integral",
+      "modulos": [
+        "FUNDAMENTOS DE LA MECÁNICA AUTOMOTRIZ",
+        "SISTEMAS DE MOTOR Y COMPONENTES INTERNOS",
+        "SISTEMAS DE COMBUSTIBLE E INYECCIÓN",
+        "SISTEMAS DE ENCENDIDO Y ELECTRÓNICA AUTOMOTRIZ",
+        "TRANSMISIONES, EMBRAGUES Y TREN MOTRIZ",
+        "SISTEMAS DE FRENOS, SUSPENSIÓN Y DIRECCIÓN",
+        "DIAGNÓSTICO ELECTRÓNICO Y USO DE ESCÁNERES",
+        "MANTENIMIENTO PREVENTIVO, NORMATIVA Y SEGURIDAD LABORAL"
+      ],
+      "created_at": "2026-06-10T23:22:12",
+      "updated_at": "2026-06-10T23:22:12"
+    },
+    "5_MODULOS::ofimatica-nivel-avanzado": {
+      "grupo": "5_MODULOS",
+      "tipo_referencia": "CURSO",
+      "tema_original": "Ofimática nivel Avanzado",
+      "modulos": [
+        "GESTIÓN AVANZADA DE HOJAS DE CÁLCULO Y ANÁLISIS DE DATOS",
+        "AUTOMATIZACIÓN CON MACROS Y PROGRAMACIÓN EN VBA",
+        "DISEÑO PROFESIONAL DE PRESENTACIONES Y COMUNICACIÓN VISUAL",
+        "ADMINISTRACIÓN Y SEGURIDAD DE DOCUMENTOS EN LA NUBE",
+        "INTEGRACIÓN DE APLICACIONES Y FLUJOS DE TRABAJO EMPRESARIALES"
+      ],
+      "created_at": "2026-06-11T15:23:09",
+      "updated_at": "2026-06-11T15:23:09"
+    },
+    "8_MODULOS::ecografias": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Ecografías",
+      "modulos": [
+        "FUNDAMENTOS FÍSICOS Y PRINCIPIOS DE LA ECOGRAFÍA",
+        "MANEJO DEL EQUIPO Y OPTIMIZACIÓN DE IMAGEN",
+        "TÉCNICAS DE ADQUISICIÓN Y PLANOS ECOGRÁFICOS",
+        "ECOGRAFÍA ABDOMINAL: HÍGADO, VESÍCULA Y RIÑONES",
+        "ECOGRAFÍA OBSTÉTRICA Y EVALUACIÓN FETAL",
+        "ECOGRAFÍA MUSCULOESQUELÉTICA Y NERVIOS PERIFÉRICOS",
+        "DOPPLER Y EVALUACIÓN HEMODINÁMICA VASCULAR",
+        "INTERPRETACIÓN DE HALLAZGOS Y ELABORACIÓN DE INFORMES ECOGRÁFICOS"
+      ],
+      "created_at": "2026-06-11T15:23:19",
+      "updated_at": "2026-06-11T15:23:19"
+    },
+    "8_MODULOS::auditoria-medica": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Auditoría Médica",
+      "modulos": [
+        "FUNDAMENTOS DE AUDITORÍA MÉDICA",
+        "NORMATIVA Y ÉTICA EN AUDITORÍA CLÍNICA",
+        "METODOLOGÍAS DE REVISIÓN DE HISTORIAS CLÍNICAS",
+        "INDICADORES DE CALIDAD Y SEGURIDAD DEL PACIENTE",
+        "GESTIÓN DE RIESGOS Y EVENTOS ADVERSOS",
+        "AUDITORÍA DE FACTURACIÓN Y CODIFICACIÓN CLÍNICA",
+        "ANÁLISIS ESTADÍSTICO E INTERPRETACIÓN DE DATOS",
+        "IMPLEMENTACIÓN DE PLANES DE MEJORA Y SEGUIMIENTO"
+      ],
+      "created_at": "2026-06-11T15:23:28",
+      "updated_at": "2026-06-11T15:23:28"
+    },
+    "8_MODULOS::derecho-de-propiedad-posesion-y-derechos-reales": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Derecho de Propiedad, Posesión y Derechos Reales",
+      "modulos": [
+        "FUNDAMENTOS Y FUENTES DEL DERECHO DE PROPIEDAD",
+        "DERECHOS Y FACULTADES DEL PROPIETARIO",
+        "POSESIÓN: CONCEPTO, ELEMENTOS Y CLASES",
+        "ADQUISICIÓN DE LA PROPIEDAD: CONTRATOS Y SUCESIONES",
+        "DERECHOS REALES LIMITADOS: SERVIDUMBRES Y USUFRUCTO",
+        "PROTECCIÓN POSESORIA: ACCIONES Y DEFENSA JUDICIAL",
+        "REGISTRO DE LA PROPIEDAD Y EFECTOS FRENTE A TERCEROS",
+        "EXPROPIACIÓN, RESPONSABILIDAD Y LÍMITES CONSTITUCIONALES DEL DOMINIO"
+      ],
+      "created_at": "2026-06-11T16:06:53",
+      "updated_at": "2026-06-11T16:06:53"
+    },
+    "8_MODULOS::derecho-notarial-registral-y-procedimientos-ante-la-sunarp": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Derecho Notarial, Registral y Procedimientos ante la SUNARP",
+      "modulos": [
+        "FUNDAMENTOS DEL DERECHO NOTARIAL Y MARCO NORMATIVO",
+        "ACTOS Y DOCUMENTOS NOTARIALES: ESCRITURAS Y ACTAS",
+        "TÍTULOS VALORES Y PROTOCOLIZACIÓN NOTARIAL",
+        "REGISTRO DE PREDIOS Y REGISTRO DE PERSONAS JURÍDICAS",
+        "INSCRIPCIONES, ASIENTOS REGISTRALES Y PRINCIPIO DE PRIORIDAD",
+        "PROCEDIMIENTOS REGISTRALES ANTE LA SUNARP Y RECURSOS ADMINISTRATIVOS",
+        "INSCRIPCIÓN DE DERECHOS REALES Y GRAVÁMENES",
+        "RESPONSABILIDAD NOTARIAL, ÉTICA PROFESIONAL Y SANCIONES ADMINISTRATIVAS"
+      ],
+      "created_at": "2026-06-11T16:07:12",
+      "updated_at": "2026-06-11T16:07:12"
+    },
+    "8_MODULOS::el-derecho-registral-y-la-formalizacion-de-la-propiedad-inmueble": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "El Derecho Registral y la Formalización de la Propiedad Inmueble",
+      "modulos": [
+        "FUNDAMENTOS DEL DERECHO REGISTRAL Y PRINCIPIOS REGISTRALES",
+        "SISTEMAS REGISTRALES Y CATASTRO: RELACIONES Y COORDINACIÓN",
+        "TÍTULOS Y DOCUMENTOS: REQUISITOS FORMALES PARA LA INSCRIPCIÓN",
+        "PROCEDIMIENTOS REGISTRALES: PRESENTACIÓN, CALIFICACIÓN E INSCRIPCIÓN",
+        "EFECTOS JURÍDICOS DE LA INSCRIPCIÓN Y LA FE PÚBLICA REGISTRAL",
+        "GRAVÁMENES, HIPOTECAS Y CARGAS: INSCRIPCIÓN Y PRIORIDAD",
+        "RECTIFICACIÓN, CANCELACIÓN Y PROTECCIÓN FRENTE A FRAUDES REGISTRALES",
+        "FORMALIZACIÓN NOTARIAL Y ESCRITURACIÓN EN TRANSMISIONES INMOBILIARIAS"
+      ],
+      "created_at": "2026-06-11T16:07:29",
+      "updated_at": "2026-06-11T16:07:29"
+    },
+    "8_MODULOS::derecho-civil-derecho-de-propiedad-posesion-y-derechos-reales": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "DERECHO CIVIL: Derecho de Propiedad, Posesión y Derechos Reales",
+      "modulos": [
+        "FUNDAMENTOS DEL DERECHO DE PROPIEDAD",
+        "POSESIÓN: CONCEPTO, CLASES Y EFECTOS JURÍDICOS",
+        "FORMAS DE ADQUISICIÓN DE LA PROPIEDAD",
+        "LIMITACIONES Y SERVIDUMBRES SOBRE LA COSA",
+        "USUFRUCTO, USO Y HABITACIÓN",
+        "DERECHOS REALES DE GARANTÍA: HIPOTECA Y PRENDA",
+        "REGISTRO DE LA PROPIEDAD Y PUBLICIDAD REGISTRAL",
+        "ACCIONES PROTECTORAS: REIVINDICATORIA Y POSESORIA"
+      ],
+      "created_at": "2026-06-11T16:17:28",
+      "updated_at": "2026-06-11T16:17:28"
+    },
+    "8_MODULOS::derecho-administrativo-derecho-notarial-registral-y-procedimientos-ante-la-sunarp": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "DERECHO ADMINISTRATIVO: Derecho Notarial, Registral y Procedimientos ante la SUNARP",
+      "modulos": [
+        "MARCO NORMATIVO DEL DERECHO NOTARIAL Y REGISTRAL EN PERÚ",
+        "ACTOS Y DOCUMENTOS NOTARIALES: AUTORIZACIÓN, PROTOCOLIZACIÓN Y EFICACIA PROBATORIA",
+        "INSCRIPCIÓN REGISTRAL Y PRINCIPIOS DE PUBLICIDAD, LEGALIDAD Y PRIORIDAD",
+        "PROCEDIMIENTOS ANTE LA SUNARP: REQUISITOS, PLAZOS Y RECURSOS ADMINISTRATIVOS",
+        "REGISTRO DE PROPIEDADES, HIPOTECAS Y CARGAS REALES",
+        "INSCRIPCIÓN DE PERSONAS JURÍDICAS Y MODIFICACIONES SOCIETARIAS EN REGISTROS",
+        "RECTIFICACIÓN REGISTRAL, NULIDAD DE ASIENTOS Y ACCIONES DE DEFENSA",
+        "FIRMA ELECTRÓNICA, DOCUMENTOS DIGITALES Y REGISTRO ELECTRÓNICO EN SUNARP"
+      ],
+      "created_at": "2026-06-11T16:17:40",
+      "updated_at": "2026-06-11T16:17:40"
+    },
+    "8_MODULOS::derecho-registral-el-derecho-registral-y-la-formalizacion-de-la-propiedad-inmueble": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "DERECHO REGISTRAL: El Derecho Registral y la Formalización de la Propiedad Inmueble",
+      "modulos": [
+        "FUNDAMENTOS DEL DERECHO REGISTRAL",
+        "SISTEMA REGISTRAL Y PRINCIPIOS REGISTRALES",
+        "DOCUMENTACIÓN Y REQUISITOS DE LA PROPIEDAD INMUEBLE",
+        "INSCRIPCIÓN REGISTRAL Y EFECTOS ENTRE TERCEROS",
+        "ANÁLISIS DE TÍTULOS Y CALIFICACIÓN REGISTRAL",
+        "REGISTROS PÚBLICOS ESPECIALIZADOS Y SU COORDINACIÓN",
+        "RECTIFICACIÓN, CANCELACIÓN Y SANEAMIENTO REGISTRAL",
+        "MODERNIZACIÓN REGISTRAL Y TECNOLOGÍAS EN LA INSCRIPCIÓN"
+      ],
+      "created_at": "2026-06-11T16:17:55",
+      "updated_at": "2026-06-11T16:17:55"
+    },
+    "8_MODULOS::extincion-de-dominio": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "EXTINCIÓN DE DOMINIO",
+      "modulos": [
+        "FUNDAMENTOS LEGALES DE LA EXTINCIÓN DE DOMINIO",
+        "MARCO CONSTITUCIONAL Y TRATADOS INTERNACIONALES APLICABLES",
+        "PROCEDIMIENTO JUDICIAL DE EXTINCIÓN DE DOMINIO",
+        "MEDIDAS CAUTELARES Y ASEGURAMIENTO DE BIENES",
+        "PRUEBAS Y CARGA PROBATORIA EN EXTINCIÓN DE DOMINIO",
+        "COOPERACIÓN INTERNACIONAL Y RECUPERACIÓN DE ACTIVOS",
+        "ASPECTOS PRÁCTICOS Y CASOS JURISPRUDENCIALES RELEVANTES",
+        "PREVENCIÓN Y POLÍTICAS PÚBLICAS PARA LA PROTECCIÓN DE DERECHOS HUMANOS"
+      ],
+      "created_at": "2026-06-11T17:17:52",
+      "updated_at": "2026-06-11T17:17:52"
+    },
+    "8_MODULOS::gestion-publica-y-normativa-del-sector-publico": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "GESTIÓN PÚBLICA Y NORMATIVA DEL SECTOR PÚBLICO",
+      "modulos": [
+        "FUNDAMENTOS DE LA GESTIÓN PÚBLICA Y MODERNIZACIÓN ADMINISTRATIVA",
+        "MARCO JURÍDICO DEL SECTOR PÚBLICO Y ANÁLISIS NORMATIVO",
+        "POLÍTICAS PÚBLICAS: DISEÑO, IMPLEMENTACIÓN Y EVALUACIÓN",
+        "GESTIÓN FINANCIERA PÚBLICA Y PRESUPUESTO POR RESULTADOS",
+        "CONTROL INTERNO, AUDITORÍA PÚBLICA Y GESTIÓN DE RIESGOS",
+        "RESPONSABILIDAD ADMINISTRATIVA, ÉTICA PÚBLICA Y TRANSPARENCIA",
+        "CONTRATACIONES PÚBLICAS Y RÉGIMEN JURÍDICO DE ADQUISICIONES",
+        "GOBIERNO DIGITAL, DATOS ABIERTOS Y PARTICIPACIÓN CIUDADANA"
+      ],
+      "created_at": "2026-06-11T17:18:00",
+      "updated_at": "2026-06-11T17:18:00"
+    },
+    "8_MODULOS::ofimatica-nivel-basico-a-avanzado": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "OFIMÁTICA NIVEL BÁSICO A AVANZADO",
+      "modulos": [
+        "FUNDAMENTOS DE OFIMÁTICA Y ENTORNOS DE TRABAJO",
+        "PROCESADOR DE TEXTOS: CREACIÓN, FORMATO Y ESTILOS AVANZADOS",
+        "HOJAS DE CÁLCULO: FÓRMULAS, FUNCIONES Y ANÁLISIS DE DATOS",
+        "HOJAS DE CÁLCULO AVANZADAS: TABLAS DINÁMICAS Y AUTOMATIZACIÓN",
+        "PRESENTACIONES PROFESIONALES: DISEÑO, ANIMACIONES Y GESTIÓN DE DIAPOSITIVAS",
+        "GESTIÓN DE BASES DE DATOS Y FORMULARIOS",
+        "COLABORACIÓN EN LA NUBE Y HERRAMIENTAS COLABORATIVAS",
+        "SEGURIDAD, COPIAS DE SEGURIDAD Y BUENAS PRÁCTICAS OFIMÁTICAS"
+      ],
+      "created_at": "2026-06-11T17:18:12",
+      "updated_at": "2026-06-11T17:18:12"
+    },
+    "8_MODULOS::especializacion-en-derechos-humanos-constitucional": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "especialización en derechos humanos, constitucional",
+      "modulos": [
+        "FUNDAMENTOS TEÓRICOS DEL DERECHO CONSTITUCIONAL Y DERECHOS HUMANOS",
+        "SISTEMAS INTERNACIONALES DE PROTECCIÓN DE LOS DERECHOS HUMANOS",
+        "DERECHOS FUNDAMENTALES Y GARANTÍAS CONSTITUCIONALES",
+        "CONTROL DE CONSTITUCIONALIDAD Y MECANISMOS DE TUTELA",
+        "DERECHOS ECONÓMICOS SOCIALES Y CULTURALES EN LA CONSTITUCIÓN",
+        "PROTECCIÓN JUDICIAL INTERNACIONAL TRIBUNALES Y PROCEDIMIENTOS",
+        "DERECHOS DE GRUPOS VULNERABLES Y PERSPECTIVA DE GÉNERO",
+        "IMPLEMENTACIÓN NORMATIVA Y POLÍTICAS PÚBLICAS DE DERECHOS HUMANOS"
+      ],
+      "created_at": "2026-06-11T18:01:06",
+      "updated_at": "2026-06-11T18:01:06"
+    },
+    "8_MODULOS::especializacion-en-conflictos-sociales": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "especialización en conflictos sociales",
+      "modulos": [
+        "TEORÍAS Y ENFOQUES DE LOS CONFLICTOS SOCIALES",
+        "ACTORES, PODER Y DINÁMICAS EN CONFLICTOS SOCIALES",
+        "CAUSAS ESTRUCTURALES Y DESENCADENANTES DE CONFLICTOS SOCIALES",
+        "MEDIACIÓN, NEGOCIACIÓN Y TÉCNICAS DE RESOLUCIÓN PACÍFICA",
+        "POLÍTICAS PÚBLICAS E INTERVENCIÓN EN CONTEXTOS CONFLICTIVOS",
+        "DERECHOS HUMANOS, JUSTICIA TRANSICIONAL Y PROCESOS DE REPARACIÓN",
+        "COMUNICACIÓN, DISCURSO PÚBLICO Y MOVILIZACIÓN SOCIAL",
+        "CONSTRUCCIÓN DE PAZ, RECONCILIACIÓN Y PREVENCIÓN DE VIOLENCIA"
+      ],
+      "created_at": "2026-06-11T18:01:17",
+      "updated_at": "2026-06-11T18:01:17"
+    },
+    "5_MODULOS::deteccion-de-monedas-y-billetes-falsos-en-soles-dolares-y-euros": {
+      "grupo": "5_MODULOS",
+      "tipo_referencia": "CURSO",
+      "tema_original": "detección de monedas y billetes falsos en soles, dólares y euros",
+      "modulos": [
+        "FUNDAMENTOS DE SEGURIDAD EN BILLETES Y MONEDAS (SOLES, DÓLARES, EUROS)",
+        "CARACTERÍSTICAS DE SEGURIDAD EN BILLETES DE SOLES, DÓLARES Y EUROS",
+        "MÉTODOS MANUALES PARA DETECTAR BILLETES Y MONEDAS FALSOS",
+        "EQUIPOS Y TECNOLOGÍAS PARA VERIFICACIÓN: LUPAS, LUZ UV Y DETECTORES",
+        "PROCEDIMIENTOS LEGALES, TRAMITACIÓN Y CADENA DE CUSTODIA DE EVIDENCIAS"
+      ],
+      "created_at": "2026-06-11T18:15:59",
+      "updated_at": "2026-06-11T18:15:59"
+    },
+    "8_MODULOS::control-gubernamental": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Control Gubernamental",
+      "modulos": [
+        "FUNDAMENTOS DEL CONTROL GUBERNAMENTAL Y MARCO LEGAL",
+        "TRANSPARENCIA, ACCESO A LA INFORMACIÓN Y PROTECCIÓN DE DATOS",
+        "AUDITORÍA PÚBLICA: TIPOS, PLANIFICACIÓN Y TÉCNICAS DE EJECUCIÓN",
+        "CONTROL INTERNO Y GESTIÓN DE RIESGOS EN LA ADMINISTRACIÓN PÚBLICA",
+        "PREVENCIÓN Y LUCHA CONTRA LA CORRUPCIÓN EN ENTIDADES PÚBLICAS",
+        "FISCALIZACIÓN PRESUPUESTARIA Y GESTIÓN FINANCIERA PÚBLICA",
+        "MECANISMOS SANCIONADORES Y RESPONSABILIDAD ADMINISTRATIVA",
+        "EVALUACIÓN DE POLÍTICAS PÚBLICAS Y MEJORA CONTINUA INSTITUCIONAL"
+      ],
+      "created_at": "2026-06-11T20:45:36",
+      "updated_at": "2026-06-11T20:45:36"
+    },
+    "8_MODULOS::contrataciones-del-estado": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Contrataciones del estado",
+      "modulos": [
+        "MARCO LEGAL DE LAS CONTRATACIONES PÚBLICAS",
+        "PRINCIPIOS Y TRANSPARENCIA EN LA CONTRATACIÓN ESTATAL",
+        "PLANIFICACIÓN Y GESTIÓN DE NECESIDADES CONTRACTUALES",
+        "PROCEDIMIENTOS DE SELECCIÓN Y MODALIDADES DE CONTRATACIÓN",
+        "ELABORACIÓN Y EVALUACIÓN DE PLIEGOS Y TÉRMINOS DE REFERENCIA",
+        "CONTRATOS, EJECUCIÓN, SUPERVISIÓN Y CONTROL CONTRACTUAL",
+        "PREVENCIÓN DE LA CORRUPCIÓN Y ÉTICA EN COMPRAS PÚBLICAS",
+        "RECURSOS, SANCIONES Y SOLUCIÓN DE CONTROVERSIAS CONTRACTUALES"
+      ],
+      "created_at": "2026-06-11T20:45:48",
+      "updated_at": "2026-06-11T20:45:48"
+    },
+    "8_MODULOS::gestion-curricular-y-liderazgo-pedagogico": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Gestión Curricular y Liderazgo Pedagógico",
+      "modulos": [
+        "FUNDAMENTOS DE GESTIÓN CURRICULAR",
+        "DISEÑO Y PLANIFICACIÓN CURRICULAR INSTITUCIONAL",
+        "EVALUACIÓN Y MEJORA DEL CURRÍCULO",
+        "LIDERAZGO PEDAGÓGICO Y DESARROLLO DOCENTE",
+        "ESTRATEGIAS DE ENSEÑANZA CENTRADAS EN EL APRENDIZAJE",
+        "GESTIÓN DEL CAMBIO Y CULTURA ESCOLAR",
+        "POLÍTICAS EDUCATIVAS Y MARCO NORMATIVO CURRICULAR",
+        "INVESTIGACIÓN APLICADA PARA LA INNOVACIÓN CURRICULAR"
+      ],
+      "created_at": "2026-06-11T20:49:21",
+      "updated_at": "2026-06-11T20:49:21"
+    },
+    "8_MODULOS::gestion-escolar-y-liderazgo-pedagogico": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Gestión Escolar y Liderazgo Pedagógico",
+      "modulos": [
+        "FUNDAMENTOS DE GESTIÓN ESCOLAR Y POLÍTICAS EDUCATIVAS",
+        "LIDERAZGO PEDAGÓGICO Y DESARROLLO PROFESIONAL DOCENTE",
+        "PLANIFICACIÓN ESTRATÉGICA PARA INSTITUCIONES EDUCATIVAS",
+        "GESTIÓN DEL CURRÍCULO Y MEJORA DEL APRENDIZAJE",
+        "EVALUACIÓN INSTITUCIONAL Y ASEGURAMIENTO DE LA CALIDAD",
+        "GESTIÓN DE RECURSOS HUMANOS Y CLIMA ORGANIZACIONAL",
+        "GESTIÓN FINANCIERA Y ADMINISTRACIÓN DE RECURSOS ESCOLARES",
+        "PARTICIPACIÓN COMUNITARIA Y RELACIONES ESCUELA FAMILIA COMUNIDAD"
+      ],
+      "created_at": "2026-06-11T20:49:31",
+      "updated_at": "2026-06-11T20:49:31"
+    },
+    "8_MODULOS::monitoreo-acompanamiento-y-evaluacion-docente": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "PROGRAMA DE ESPECIALIZACIÓN",
+      "tema_original": "Monitoreo, Acompañamiento y Evaluación Docente",
+      "modulos": [
+        "FUNDAMENTOS DEL MONITOREO PEDAGÓGICO",
+        "DISEÑO DE SISTEMAS DE ACOMPAÑAMIENTO DOCENTE",
+        "INSTRUMENTOS Y TÉCNICAS DE EVALUACIÓN DOCENTE",
+        "OBSERVACIÓN DE AULA Y RETROALIMENTACIÓN EFECTIVA",
+        "ANÁLISIS DE EVIDENCIAS DE APRENDIZAJE",
+        "GESTIÓN DE PLANES DE MEJORA DOCENTE",
+        "ESTRATEGIAS DE FORMACIÓN Y DESARROLLO PROFESIONAL",
+        "ÉTICA, DERECHOS Y POLÍTICAS EN EVALUACIÓN DOCENTE"
+      ],
+      "created_at": "2026-06-11T20:49:39",
+      "updated_at": "2026-06-11T20:49:39"
+    },
+    "5_MODULOS::gestion-curricular-y-liderazgo-pedagogico": {
+      "grupo": "5_MODULOS",
+      "tipo_referencia": "CURSO",
+      "tema_original": "Gestión Curricular y Liderazgo Pedagógico",
+      "modulos": [
+        "FUNDAMENTOS DE GESTIÓN CURRICULAR",
+        "DISEÑO Y EVALUACIÓN CURRICULAR CENTRADA EN COMPETENCIAS",
+        "LIDERAZGO PEDAGÓGICO Y DESARROLLO PROFESIONAL DOCENTE",
+        "GESTIÓN DE PROYECTOS DE INNOVACIÓN EDUCATIVA",
+        "EVALUACIÓN INSTITUCIONAL Y MEJORA CONTINUA DEL APRENDIZAJE"
+      ],
+      "created_at": "2026-06-11T20:50:39",
+      "updated_at": "2026-06-11T20:50:39"
+    },
+    "8_MODULOS::derecho-a-la-salud": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "DERECHO A LA SALUD",
+      "modulos": [
+        "FUNDAMENTOS DEL DERECHO A LA SALUD",
+        "MARCO CONSTITUCIONAL Y DERECHOS HUMANOS EN SALUD",
+        "POLÍTICAS PÚBLICAS Y SISTEMAS DE SALUD",
+        "RESPONSABILIDAD CIVIL Y ADMINISTRATIVA EN SANIDAD",
+        "BIOÉTICA, CONSENTIMIENTO INFORMADO Y AUTONOMÍA DEL PACIENTE",
+        "ACCESO, EQUIDAD Y COBERTURA SANITARIA UNIVERSAL",
+        "PROTECCIÓN DE DATOS Y PRIVACIDAD EN SALUD",
+        "LITIGIO ESTRATÉGICO Y TUTELA DEL DERECHO A LA SALUD"
+      ],
+      "created_at": "2026-06-11T21:43:18",
+      "updated_at": "2026-06-11T21:43:18"
+    },
+    "5_MODULOS::condiciones-fisicas-en-salud-en-la-educacion-fisica": {
+      "grupo": "5_MODULOS",
+      "tipo_referencia": "CURSO",
+      "tema_original": "Condiciones físicas en salud en la Educación Física",
+      "modulos": [
+        "FUNDAMENTOS DE LA CONDICIÓN FÍSICA Y SALUD EN EDUCACIÓN",
+        "EVALUACIÓN Y DIAGNÓSTICO DE LA CONDICIÓN FÍSICA EN ESTUDIANTES",
+        "PROGRAMACIÓN DE ACTIVIDADES PARA MEJORAR LA RESISTENCIA Y FUERZA",
+        "PREVENCIÓN DE LESIONES Y PROMOCIÓN DE HÁBITOS SALUDABLES",
+        "ADAPTACIONES PEDAGÓGICAS Y ATENCIÓN A LA DIVERSIDAD FUNCIONAL"
+      ],
+      "created_at": "2026-06-12T16:09:26",
+      "updated_at": "2026-06-12T16:09:26"
+    },
+    "8_MODULOS::desarrollo-motor-y-psicomotricidad-en-la-educacion-fisica": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "DIPLOMADO",
+      "tema_original": "Desarrollo Motor y Psicomotricidad en la Educación Física",
+      "modulos": [
+        "FUNDAMENTOS DEL DESARROLLO MOTOR EN LA INFANCIA",
+        "BASES NEUROPSICOLÓGICAS DE LA MOTRICIDAD Y EL MOVIMIENTO",
+        "EVALUACIÓN PSICOMOTRIZ Y CRITERIOS DE OBSERVACIÓN EN CONTEXTO EDUCATIVO",
+        "DISEÑO DE SESIONES DIDÁCTICAS CENTRADAS EN EL DESARROLLO MOTOR",
+        "JUEGOS Y ACTIVIDADES PARA PROMOVER LA COORDINACIÓN Y EQUILIBRIO",
+        "INTERVENCIONES INCLUSIVAS PARA DIVERSIDAD FUNCIONAL Y NECESIDADES EDUCATIVAS",
+        "DESARROLLO DE LA MOTRICIDAD FINA Y GRUESA EN EDAD ESCOLAR",
+        "EVALUACIÓN DEL PROGRESO MOTOR Y ADAPTACIÓN CURRICULAR CONTINUA"
+      ],
+      "created_at": "2026-06-12T16:09:38",
+      "updated_at": "2026-06-12T16:09:38"
+    },
+    "8_MODULOS::fundamentos-y-pedagogia-de-la-educacion-fisica": {
+      "grupo": "8_MODULOS",
+      "tipo_referencia": "PROGRAMA DE ESPECIALIZACIÓN",
+      "tema_original": "Fundamentos y Pedagogía de la Educación Física",
+      "modulos": [
+        "FUNDAMENTOS HISTÓRICOS Y FILOSÓFICOS DE LA EDUCACIÓN FÍSICA",
+        "BASES BIOLÓGICAS Y DEL DESARROLLO MOTOR EN LA INFANCIA Y ADOLESCENCIA",
+        "PRINCIPIOS PEDAGÓGICOS Y METODOLOGÍAS DEL ENTRENAMIENTO EN CONTEXTOS ESCOLARES",
+        "DISEÑO CURRICULAR Y PLANIFICACIÓN DE UNIDADES DIDÁCTICAS EN EDUCACIÓN FÍSICA",
+        "EVALUACIÓN DEL APRENDIZAJE MOTOR Y COMPETENCIAS MOTRICES EN EL ALUMNADO",
+        "ACTIVIDADES FÍSICAS ADAPTADAS E INCLUSIÓN EDUCATIVA",
+        "SALUD, PROMOCIÓN DE HÁBITOS Y PREVENCIÓN DE LESIONES EN LA ESCUELA",
+        "RECURSOS DIDÁCTICOS, EVALUACIÓN FORMATIVA Y NUEVAS TECNOLOGÍAS APLICADAS"
+      ],
+      "created_at": "2026-06-12T16:09:48",
+      "updated_at": "2026-06-12T16:09:48"
+    }
+  }
 }
