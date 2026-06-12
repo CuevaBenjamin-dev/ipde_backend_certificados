@@ -15,10 +15,8 @@ from dotenv import load_dotenv
 from openai import OpenAI
 from copy import deepcopy
 from typing import List, Tuple
-from urllib.parse import quote
 import qrcode
 import threading
-
 
 from app.pptx_merge import merge_pptx_packages
 
@@ -1095,71 +1093,6 @@ def obtener_modelo_unico_del_lote(items: List[DiplomaRequest]) -> str:
 
     return modelo_base
 
-MODEL_FILENAME_LABELS = {
-    "INSTITUTO": "Instituto",
-    "UNIVERSIDAD_2QRS": "Universidad 2QRS",
-    "UNIVERSIDAD_AZUL": "Universidad Azul",
-    "COLEGIO_ABOGADOS_CALLAO": "Colegio de Abogados del Callao",
-    "COLEGIO_DE_PROFESORES_DEL_PERU": "Colegio de Profesores del Perú",
-}
-
-
-def limpiar_nombre_archivo(texto: str) -> str:
-    """
-    Limpia caracteres que Windows no permite en nombres de archivo:
-    \ / : * ? " < > |
-
-    Mantiene tildes y espacios para que el nombre se vea natural.
-    """
-    texto = unicodedata.normalize("NFC", texto or "").strip()
-    texto = re.sub(r'[\\/:*?"<>|]+', "", texto)
-    texto = re.sub(r"\s+", " ", texto)
-    texto = texto.strip(" .")
-
-    return texto or "CERTIFICADOS"
-
-
-def construir_nombre_archivo_pptx(items: List[DiplomaRequest], modelo_lote: str) -> str:
-    """
-    Construye el nombre final del PPTX usando:
-    - Nombre completo de la persona
-    - Nombre del modelo de certificado
-
-    Ejemplo:
-    Diana Carolina Chávez - Universidad 2QRS.pptx
-    """
-    primer_item = items[0]
-
-    nombre_completo = nombre_completo_capitalizado(
-        primer_item.nombres,
-        primer_item.apellidos
-    )
-
-    modelo_key = (modelo_lote or "").upper().strip()
-    nombre_modelo = MODEL_FILENAME_LABELS.get(
-        modelo_key,
-        modelo_key.replace("_", " ").title()
-    )
-
-    filename = f"{nombre_completo} - {nombre_modelo}.pptx"
-
-    return limpiar_nombre_archivo(filename)
-
-
-def construir_content_disposition(filename: str) -> str:
-    """
-    Crea un Content-Disposition compatible.
-
-    filename:
-    - versión simple ASCII como respaldo.
-
-    filename*:
-    - versión UTF-8 para nombres con tildes o caracteres especiales.
-    """
-    ascii_fallback = safe_filename(filename.replace(".pptx", "")) + ".pptx"
-    utf8_filename = quote(filename)
-
-    return f'attachment; filename="{ascii_fallback}"; filename*=UTF-8\'\'{utf8_filename}'
 
 @app.get("/health")
 def health():
@@ -1173,15 +1106,14 @@ def generate_pptx_batch(
         raise HTTPException(status_code=400, detail="items no puede estar vacío")
 
     modelo_lote = obtener_modelo_unico_del_lote(payload.items)
-    filename = construir_nombre_archivo_pptx(payload.items, modelo_lote)
-    content_disposition = construir_content_disposition(filename)
+    filename = f"CERTIFICADOS_{int(datetime.now().timestamp())}.pptx"
 
     if modelo_lote == UNIVERSIDAD_2QRS_MODEL_KEY:
         output = BytesIO(generar_pptx_universidad_2qrs(payload.items))
         return StreamingResponse(
             output,
             media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            headers={"Content-Disposition": content_disposition},
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
         )
 
     # 1. Generar presentaciones SIN QR
@@ -1212,5 +1144,5 @@ def generate_pptx_batch(
     return StreamingResponse(
         output,
         media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        headers={"Content-Disposition": content_disposition}
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'}
     )
