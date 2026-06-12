@@ -303,56 +303,36 @@ def generate_qr_image(url: str) -> BytesIO:
     return buffer
 ##fin agregué
 
-def insert_qr_at_placeholder_in_slide(slide, qr_stream: BytesIO, qr_size_cm: float = 2.78) -> int:
-    """
-    Inserta el QR únicamente dentro del slide recibido.
-
-    Antes se recorría toda la presentación desde el inicio cada vez que se quería
-    insertar un QR. Eso podía asociar el QR de un participante con una diapositiva
-    incorrecta cuando el PPTX final tenía varios certificados combinados.
-    """
-    QR_SIZE = Cm(qr_size_cm)
-    inserted_count = 0
-
-    # Guardamos los bytes para poder insertar el mismo QR en más de un placeholder
-    # sin depender de la posición actual del stream.
-    qr_bytes = qr_stream.getvalue()
-
-    for shape in list(slide.shapes):
-        if not shape.has_text_frame:
-            continue
-
-        if "{{QR_CODE}}" not in shape.text_frame.text:
-            continue
-
-        left = shape.left
-        top = shape.top
-
-        # Eliminamos el placeholder para evitar cajas vacías encima del QR.
-        element = shape._element
-        element.getparent().remove(element)
-
-        slide.shapes.add_picture(
-            BytesIO(qr_bytes),
-            left=left,
-            top=top,
-            width=QR_SIZE,
-            height=QR_SIZE,
-        )
-
-        inserted_count += 1
-
-    return inserted_count
-
-
-# Compatibilidad: se mantiene la función anterior por si alguna parte externa
-# todavía la invoca. Internamente el endpoint usa la versión slide por slide.
 def insert_qr_at_placeholder(prs: Presentation, qr_stream: BytesIO, qr_size_cm: float = 2.78):
-    for slide in prs.slides:
-        inserted = insert_qr_at_placeholder_in_slide(slide, qr_stream, qr_size_cm)
-        if inserted > 0:
-            return
+    QR_SIZE = Cm(qr_size_cm)
 
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if not shape.has_text_frame:
+                continue
+
+            if "{{QR_CODE}}" not in shape.text_frame.text:
+                continue
+
+            left = shape.left
+            top = shape.top
+
+            shape.text_frame.clear()
+
+            slide.shapes.add_picture(
+                qr_stream,
+                left=left,
+                top=top,
+                width=QR_SIZE,
+                height=QR_SIZE,
+            )
+
+            return  # solo un QR
+
+
+
+
+                    
 
 ##DISTRIBUIR HORAS POR MÓDULO
 def distribuir_horas_por_modulo(total_horas: int, cantidad_modulos: int) -> List[int]:
@@ -872,14 +852,7 @@ def replace_placeholders(prs, mapping):
 # MERGE PPTX
 # -------------------------------------------------
 
-UNIVERSIDAD_2QRS_MODEL_KEY = "UNIVERSIDAD_2QRS"
-
-
 def _replace_rids_in_element(el, rid_map: dict[str, str]):
-    """
-    Reemplaza ids de relación dentro de un fragmento XML copiado.
-    Esto es necesario para que imágenes y recursos relacionados apunten al slide destino.
-    """
     for e in el.iter():
         if not hasattr(e, "attrib"):
             continue
@@ -888,131 +861,8 @@ def _replace_rids_in_element(el, rid_map: dict[str, str]):
                 e.attrib[attr_key] = rid_map[attr_val]
 
 
-def _element_has_placeholder(el) -> bool:
-    """
-    Detecta si un elemento XML es un placeholder.
-    Los placeholders heredados de layout/master no deben materializarse como shapes reales,
-    porque pueden duplicar cajas de texto o alterar el diseño final.
-    """
-    for e in el.iter():
-        if str(e.tag).lower().endswith("}ph"):
-            return True
-    return False
-
-
-def _iter_copyable_sp_tree_children(sp_tree, *, skip_placeholders: bool):
-    """
-    Itera los hijos realmente copiables de un spTree.
-    No copia propiedades internas del grupo raíz del slide/layout/master.
-    """
-    for child in list(sp_tree):
-        tag = child.tag.lower()
-
-        # Estos nodos son propiedades internas del grupo raíz.
-        # Copiarlos genera XML inválido o comportamientos visuales extraños.
-        if tag.endswith("nvgrpsppr") or tag.endswith("grpsppr"):
-            continue
-
-        if skip_placeholders and _element_has_placeholder(child):
-            continue
-
-        yield child
-
-
-def _clone_child_with_relationships(dest_slide, src_part, child):
-    """
-    Clona un shape XML y recrea sus relaciones en el slide destino.
-    Aplica especialmente a imágenes, fondos, logotipos y otros recursos embebidos.
-    """
-    cloned_child = deepcopy(child)
-
-    rid_map = {}
-    for rId, rel in src_part.rels.items():
-        try:
-            new_rId = dest_slide.part.relate_to(
-                rel._target,
-                rel.reltype,
-                is_external=rel.is_external,
-            )
-            rid_map[rId] = new_rId
-        except Exception:
-            # Si una relación no aplica al shape clonado, se omite sin romper el PPTX.
-            continue
-
-    _replace_rids_in_element(cloned_child, rid_map)
-    return cloned_child
-
-
-def _copy_sp_tree_children_to_slide(dest_slide, src_part, src_sp_tree, *, skip_placeholders: bool):
-    """
-    Copia shapes desde un slide, layout o master hacia un slide destino.
-    Se usa en UNIVERSIDAD_2QRS para materializar el diseño visual heredado
-    antes de ocultar el master/layout del destino.
-    """
-    dest_sp_tree = dest_slide.shapes._spTree
-
-    for child in _iter_copyable_sp_tree_children(
-        src_sp_tree,
-        skip_placeholders=skip_placeholders,
-    ):
-        cloned_child = _clone_child_with_relationships(dest_slide, src_part, child)
-        dest_sp_tree.insert_element_before(cloned_child, "p:extLst")
-
-
-def _remove_slide_level_shapes(slide):
-    """
-    Elimina shapes creados automáticamente al agregar una diapositiva nueva.
-    No elimina elementos heredados del master, por eso en 2QRS también se usa
-    showMasterSp=0 y una materialización controlada del diseño fuente.
-    """
-    for shape in list(slide.shapes):
-        element = shape._element
-        element.getparent().remove(element)
-
-
-def _hide_inherited_master_shapes(slide):
-    """
-    Evita que la diapositiva clonada herede shapes del master del PPTX destino.
-
-    Esto es clave para UNIVERSIDAD_2QRS: cuando se mezclan DIPLOMADO, CURSO,
-    CERTIFICADO DE ESTUDIOS, etc. dentro del mismo modelo, usar el master/layout
-    del primer template puede superponer o agrandar el fondo del jaguar/escudo.
-    """
-    slide._element.set("showMasterSp", "0")
-
-
-def _count_non_placeholder_shapes_in_layout(layout) -> int:
-    """
-    Cuenta shapes visuales no-placeholder en un layout.
-    Sirve para elegir el layout más limpio del destino en UNIVERSIDAD_2QRS.
-    """
-    count = 0
-    for _ in _iter_copyable_sp_tree_children(
-        layout.shapes._spTree,
-        skip_placeholders=True,
-    ):
-        count += 1
-    return count
-
-
-def _get_cleanest_layout(prs: Presentation):
-    """
-    Devuelve el layout con menos shapes visuales propios.
-    Es más seguro que asumir que slide_layouts[6] siempre está realmente vacío.
-    """
-    layouts = list(prs.slide_layouts)
-    if not layouts:
-        raise ValueError("La presentación no tiene layouts disponibles")
-
-    return min(layouts, key=_count_non_placeholder_shapes_in_layout)
-
-
 def clone_slide_into(dest_prs: Presentation, src_slide):
-    """
-    Clonación original para los modelos que ya funcionan correctamente.
-    No se cambia su comportamiento para evitar afectar INSTITUTO, UNIVERSIDAD_AZUL,
-    COLEGIO_ABOGADOS_CALLAO o COLEGIO_DE_PROFESORES_DEL_PERU.
-    """
+    # ✅ USAR LAYOUT EN BLANCO (evita placeholders duplicados)
     blank_layout = dest_prs.slide_layouts[6]
     new_slide = dest_prs.slides.add_slide(blank_layout)
 
@@ -1022,18 +872,20 @@ def clone_slide_into(dest_prs: Presentation, src_slide):
     for child in list(src_spTree):
         tag = child.tag.lower()
 
+        # ❌ NO copiar propiedades internas del layout
         if tag.endswith("nvgrpsppr") or tag.endswith("grpsppr"):
             continue
 
-        spTree.insert_element_before(deepcopy(child), "p:extLst")
+        spTree.insert_element_before(deepcopy(child), 'p:extLst')
 
+    # 🔁 Copiar relaciones (imágenes, fondos, etc.)
     rid_map = {}
     for rId, rel in src_slide.part.rels.items():
         try:
             new_rId = new_slide.part.relate_to(
                 rel._target,
                 rel.reltype,
-                is_external=rel.is_external,
+                is_external=rel.is_external
             )
             rid_map[rId] = new_rId
         except Exception:
@@ -1042,82 +894,16 @@ def clone_slide_into(dest_prs: Presentation, src_slide):
     _replace_rids_in_element(new_slide._element, rid_map)
 
 
-def clone_slide_into_universidad_2qrs(dest_prs: Presentation, src_slide):
-    """
-    Clonación especial SOLO para UNIVERSIDAD_2QRS.
-
-    Motivo:
-    - En 2QRS, algunas piezas visuales del diseño pueden vivir en master/layout.
-    - Al mezclar distintos tipoModelo en el mismo modeloCertificado, el slide clonado
-      puede heredar el master/layout del primer PPTX del lote.
-    - Eso produce fondos gigantes, marcas de agua duplicadas o elementos superpuestos.
-
-    Solución:
-    1. Crear un slide con el layout más limpio del destino.
-    2. Ocultar shapes heredados del master del destino.
-    3. Materializar primero el master y layout del slide fuente.
-    4. Copiar encima los shapes reales del slide fuente.
-    """
-    clean_layout = _get_cleanest_layout(dest_prs)
-    new_slide = dest_prs.slides.add_slide(clean_layout)
-
-    _hide_inherited_master_shapes(new_slide)
-    _remove_slide_level_shapes(new_slide)
-
-    # 1) Materializar shapes visuales del master fuente, sin placeholders.
-    try:
-        src_master = src_slide.slide_layout.slide_master
-        _copy_sp_tree_children_to_slide(
-            new_slide,
-            src_master.part,
-            src_master.shapes._spTree,
-            skip_placeholders=True,
-        )
-    except Exception:
-        pass
-
-    # 2) Materializar shapes visuales del layout fuente, sin placeholders.
-    try:
-        src_layout = src_slide.slide_layout
-        _copy_sp_tree_children_to_slide(
-            new_slide,
-            src_layout.part,
-            src_layout.shapes._spTree,
-            skip_placeholders=True,
-        )
-    except Exception:
-        pass
-
-    # 3) Copiar shapes propios del slide fuente, incluyendo placeholders ya rellenados.
-    _copy_sp_tree_children_to_slide(
-        new_slide,
-        src_slide.part,
-        src_slide.shapes._spTree,
-        skip_placeholders=False,
-    )
-
-    return new_slide
-
-
-def merge_presentations(
-    presentations: List[Presentation],
-    modelo_certificado: str = "",
-) -> Presentation:
+def merge_presentations(presentations: List[Presentation]) -> Presentation:
     if not presentations:
         raise ValueError("No hay presentaciones para unir")
 
-    modelo_key = (modelo_certificado or "").upper().strip()
-
-    # Usar la primera presentación como base preserva su tamaño de página,
-    # tema y configuración general del archivo.
+    # 🔒 Usar la primera presentación como base (PRESERVA TEMA Y COLORES)
     dest = presentations[0]
 
     for prs in presentations[1:]:
         for slide in prs.slides:
-            if modelo_key == UNIVERSIDAD_2QRS_MODEL_KEY:
-                clone_slide_into_universidad_2qrs(dest, slide)
-            else:
-                clone_slide_into(dest, slide)
+            clone_slide_into(dest, slide)
 
     return dest
 
@@ -1227,39 +1013,9 @@ def generar_presentacion_por_item(item: DiplomaRequest) -> Presentation:
 # ENDPOINTS
 # -------------------------------------------------
 
-def obtener_modelo_unico_del_lote(items: List[DiplomaRequest]) -> str:
-    """
-    Valida que el lote pertenezca a un solo modeloCertificado.
-
-    Sí se permite mezclar distintos tipoModelo, por ejemplo:
-    - UNIVERSIDAD_2QRS + DIPLOMADO
-    - UNIVERSIDAD_2QRS + CURSO
-    - UNIVERSIDAD_2QRS + CURSO_DE_CAPACITACION
-
-    Lo que no debe ocurrir es mezclar UNIVERSIDAD_2QRS con UNIVERSIDAD_AZUL,
-    INSTITUTO u otros modelos dentro del mismo PPTX.
-    """
-    modelo_base = items[0].modeloCertificado.upper().strip()
-
-    for index, item in enumerate(items, start=1):
-        modelo_actual = item.modeloCertificado.upper().strip()
-        if modelo_actual != modelo_base:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    "No mezcles distintos modeloCertificado en un mismo lote. "
-                    f"El primer item usa {modelo_base}, pero el item {index} usa {modelo_actual}. "
-                    "Puedes mezclar tipoModelo, pero no modeloCertificado."
-                ),
-            )
-
-    return modelo_base
-
-
 @app.get("/health")
 def health():
     return {"status": "ok"}
-
 
 @app.post("/api/diplomas")
 def generate_pptx_batch(
@@ -1268,52 +1024,25 @@ def generate_pptx_batch(
     if not payload.items:
         raise HTTPException(status_code=400, detail="items no puede estar vacío")
 
-    modelo_lote = obtener_modelo_unico_del_lote(payload.items)
-
-    # 1. Generar presentaciones SIN QR.
-    # También guardamos cuántas diapositivas tiene cada certificado para luego
-    # insertar el QR en las slides correctas después del merge.
+    # 1. Generar presentaciones SIN QR
     presentations: List[Presentation] = []
-    slide_counts: List[int] = []
-
     for item in payload.items:
         prs = generar_presentacion_por_item(item)
         presentations.append(prs)
-        slide_counts.append(len(prs.slides))
 
-    # 2. Merge.
-    # Para UNIVERSIDAD_2QRS se usa una clonación especial que evita heredar
-    # el master/layout equivocado cuando se mezclan distintos tipoModelo.
-    merged = merge_presentations(
-        presentations,
-        modelo_certificado=modelo_lote,
-    )
+    # 2. Merge
+    merged = merge_presentations(presentations)
 
-    # 3. Insertar QR DESPUÉS del merge.
-    # Ahora se hace por rango de diapositivas de cada item, no recorriendo
-    # toda la presentación desde el inicio en cada iteración.
-    merged_slides = list(merged.slides)
-    cursor = 0
-
-    for item, slide_count in zip(payload.items, slide_counts):
+    # 3. Insertar QR DESPUÉS del merge (clave)
+    for slide, item in zip(merged.slides, payload.items):
         qr_url = build_qr_url(
             item.nombres,
             item.apellidos,
-            item.temaDiplomado,
+            item.temaDiplomado
         )
         qr_image = generate_qr_image(qr_url)
-
         qr_size_cm = 2.0 if item.modeloCertificado.upper().strip() == "UNIVERSIDAD_AZUL" else 2.78
-
-        slides_del_item = merged_slides[cursor: cursor + slide_count]
-        for slide in slides_del_item:
-            insert_qr_at_placeholder_in_slide(
-                slide,
-                qr_image,
-                qr_size_cm=qr_size_cm,
-            )
-
-        cursor += slide_count
+        insert_qr_at_placeholder(merged, qr_image, qr_size_cm=qr_size_cm)
 
     # 4. Exportar
     output = BytesIO()
