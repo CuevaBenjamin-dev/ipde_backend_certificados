@@ -18,6 +18,8 @@ from typing import List, Tuple
 import qrcode
 import threading
 
+from app.pptx_merge import merge_pptx_packages
+
 # -------------------------------------------------
 # CONFIGURACIÓN GENERAL
 # -------------------------------------------------
@@ -303,36 +305,51 @@ def generate_qr_image(url: str) -> BytesIO:
     return buffer
 ##fin agregué
 
-def insert_qr_at_placeholder(prs: Presentation, qr_stream: BytesIO, qr_size_cm: float = 2.78):
+def insert_qr_at_placeholder_in_slide(
+    slide,
+    qr_stream: BytesIO,
+    qr_size_cm: float = 2.78,
+) -> int:
     QR_SIZE = Cm(qr_size_cm)
+    qr_bytes = qr_stream.getvalue()
+    inserted_count = 0
 
+    for shape in list(slide.shapes):
+        if not shape.has_text_frame:
+            continue
+
+        if "{{QR_CODE}}" not in shape.text_frame.text:
+            continue
+
+        left = shape.left
+        top = shape.top
+
+        element = shape._element
+        element.getparent().remove(element)
+
+        slide.shapes.add_picture(
+            BytesIO(qr_bytes),
+            left=left,
+            top=top,
+            width=QR_SIZE,
+            height=QR_SIZE,
+        )
+        inserted_count += 1
+
+    return inserted_count
+
+
+def insert_qr_at_placeholder(
+    prs: Presentation,
+    qr_stream: BytesIO,
+    qr_size_cm: float = 2.78,
+):
     for slide in prs.slides:
-        for shape in slide.shapes:
-            if not shape.has_text_frame:
-                continue
-
-            if "{{QR_CODE}}" not in shape.text_frame.text:
-                continue
-
-            left = shape.left
-            top = shape.top
-
-            shape.text_frame.clear()
-
-            slide.shapes.add_picture(
-                qr_stream,
-                left=left,
-                top=top,
-                width=QR_SIZE,
-                height=QR_SIZE,
-            )
-
-            return  # solo un QR
+        if insert_qr_at_placeholder_in_slide(slide, qr_stream, qr_size_cm):
+            return
 
 
 
-
-                    
 
 ##DISTRIBUIR HORAS POR MÓDULO
 def distribuir_horas_por_modulo(total_horas: int, cantidad_modulos: int) -> List[int]:
@@ -1013,6 +1030,69 @@ def generar_presentacion_por_item(item: DiplomaRequest) -> Presentation:
 # ENDPOINTS
 # -------------------------------------------------
 
+UNIVERSIDAD_2QRS_MODEL_KEY = "UNIVERSIDAD_2QRS"
+
+
+def presentation_to_pptx_bytes(prs: Presentation) -> bytes:
+    output = BytesIO()
+    prs.save(output)
+    return output.getvalue()
+
+
+def insertar_qr_en_presentacion_item(
+    prs: Presentation,
+    item: DiplomaRequest,
+) -> None:
+    qr_url = build_qr_url(
+        item.nombres,
+        item.apellidos,
+        item.temaDiplomado,
+    )
+    qr_image = generate_qr_image(qr_url)
+    qr_size_cm = (
+        2.0
+        if item.modeloCertificado.upper().strip() == "UNIVERSIDAD_AZUL"
+        else 2.78
+    )
+
+    for slide in prs.slides:
+        insert_qr_at_placeholder_in_slide(
+            slide,
+            qr_image,
+            qr_size_cm=qr_size_cm,
+        )
+
+
+def generar_pptx_universidad_2qrs(
+    items: List[DiplomaRequest],
+) -> bytes:
+    pptx_files = []
+    for item in items:
+        prs = generar_presentacion_por_item(item)
+        insertar_qr_en_presentacion_item(prs, item)
+        pptx_files.append(presentation_to_pptx_bytes(prs))
+
+    return merge_pptx_packages(pptx_files)
+
+
+def obtener_modelo_unico_del_lote(items: List[DiplomaRequest]) -> str:
+    modelo_base = items[0].modeloCertificado.upper().strip()
+
+    for index, item in enumerate(items, start=1):
+        modelo_actual = item.modeloCertificado.upper().strip()
+        if modelo_actual != modelo_base:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "No mezcles distintos modeloCertificado en un mismo lote. "
+                    f"El primer item usa {modelo_base}, pero el item {index} "
+                    f"usa {modelo_actual}."
+                ),
+            )
+
+    return modelo_base
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -1023,6 +1103,17 @@ def generate_pptx_batch(
 ):
     if not payload.items:
         raise HTTPException(status_code=400, detail="items no puede estar vacío")
+
+    modelo_lote = obtener_modelo_unico_del_lote(payload.items)
+    filename = f"CERTIFICADOS_{int(datetime.now().timestamp())}.pptx"
+
+    if modelo_lote == UNIVERSIDAD_2QRS_MODEL_KEY:
+        output = BytesIO(generar_pptx_universidad_2qrs(payload.items))
+        return StreamingResponse(
+            output,
+            media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
 
     # 1. Generar presentaciones SIN QR
     presentations: List[Presentation] = []
@@ -1048,8 +1139,6 @@ def generate_pptx_batch(
     output = BytesIO()
     merged.save(output)
     output.seek(0)
-
-    filename = f"CERTIFICADOS_{int(datetime.now().timestamp())}.pptx"
 
     return StreamingResponse(
         output,

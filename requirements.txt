@@ -7,4 +7,3 @@ qrcode
 pillow
 requests
 python-jose
-Spire.Presentation
