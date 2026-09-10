@@ -14,13 +14,19 @@ from datetime import datetime
 from dotenv import load_dotenv
 from openai import OpenAI
 from copy import deepcopy
-from typing import List, Tuple
+from typing import List
 from urllib.parse import quote
 import qrcode
-import threading
+import logging
 
 
 from app.pptx_merge import merge_pptx_packages
+from app.firestore_cache import (
+    buscar_modulos_en_firestore,
+    extraer_modulos_de_registro,
+    guardar_modulos_en_firestore,
+    normalizar_clave_tema,
+)
 
 # -------------------------------------------------
 # CONFIGURACIÓN GENERAL
@@ -31,6 +37,7 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = FastAPI(title="Certificados API", version="2.3.0")
+logger = logging.getLogger(__name__)
 
 # Modelos disponibles (carpetas dentro de app/templates)
 # IMPORTANTE: Deben coincidir con los valores enviados desde el frontend:
@@ -74,29 +81,13 @@ MODULOS_COUNT = {
 }
 
 # -------------------------------------------------
-# JSON PERSISTENTE DE MÓDULOS
+# JSON BASE DE MÓDULOS (SOLO LECTURA)
 # -------------------------------------------------
-# JSON base incluido en el repositorio GitHub.
-# Este archivo sirve como base fija después de que descargues el JSON del volumen
-# y lo subas manualmente a tu repositorio.
+# El JSON base se incluye con la aplicación desplegada y nunca se modifica en ejecución.
 MODULOS_BASE_JSON_PATH = os.getenv(
     "MODULOS_BASE_JSON_PATH",
     os.path.join("app", "modulos_base.json")
 )
-
-# JSON persistente de Railway Volume.
-# En Railway, RAILWAY_VOLUME_MOUNT_PATH lo crea automáticamente el volumen.
-# En local, usará app/data/modulos_cache.json.
-MODULOS_VOLUME_DIR = os.getenv(
-    "RAILWAY_VOLUME_MOUNT_PATH",
-    os.path.join("app", "data")
-)
-MODULOS_VOLUME_JSON_PATH = os.getenv(
-    "MODULOS_VOLUME_JSON_PATH",
-    os.path.join(MODULOS_VOLUME_DIR, "modulos_cache.json")
-)
-
-MODULOS_JSON_LOCK = threading.Lock()
 
 
 # -------------------------------------------------
@@ -527,22 +518,8 @@ def ajustar_tabla_certificado_estudios_generico(
 
 
 # -------------------------------------------------
-# CACHE PERSISTENTE DE MÓDULOS EN JSON
+# CACHE DE MÓDULOS: JSON BASE + FIRESTORE
 # -------------------------------------------------
-
-def normalizar_clave_tema(texto: str) -> str:
-    """
-    Normaliza el tema para usarlo como clave estable del JSON.
-    Ej:
-    'Didáctica de la Comunicación en Educación Secundaria'
-    -> 'didactica-de-la-comunicacion-en-educacion-secundaria'
-    """
-    texto = unicodedata.normalize("NFKD", texto or "")
-    texto = texto.encode("ascii", "ignore").decode("ascii")
-    texto = texto.lower().strip()
-    texto = re.sub(r"[^a-z0-9]+", "-", texto)
-    texto = re.sub(r"-+", "-", texto).strip("-")
-    return texto or "sin-tema"
 
 
 def grupo_modulos_por_tipo(tipo: str) -> str:
@@ -601,25 +578,6 @@ def leer_json_modulos(path: str) -> dict:
         return empty_modulos_json()
 
 
-def extraer_modulos_de_registro(registro) -> list[str] | None:
-    """
-    Soporta dos formatos:
-    1) {"modulos": [...]}
-    2) [...] directamente
-    """
-    if isinstance(registro, list):
-        modulos = registro
-    elif isinstance(registro, dict):
-        modulos = registro.get("modulos")
-    else:
-        return None
-
-    if not isinstance(modulos, list):
-        return None
-
-    return [str(m).upper().strip() for m in modulos if str(m).strip()]
-
-
 def buscar_modulos_en_json(path: str, cache_key: str, cantidad_esperada: int) -> list[str] | None:
     data = leer_json_modulos(path)
     items = data.get("items", {})
@@ -636,47 +594,7 @@ def buscar_modulos_en_json(path: str, cache_key: str, cantidad_esperada: int) ->
     return modulos
 
 
-def guardar_modulos_en_volume_json(
-    cache_key: str,
-    tipo: str,
-    tema: str,
-    modulos: list[str],
-) -> None:
-    """
-    Guarda módulos nuevos en el JSON persistente del Railway Volume.
-    No guarda en RAM y no modifica el JSON base del repositorio.
-    """
-    with MODULOS_JSON_LOCK:
-        os.makedirs(os.path.dirname(MODULOS_VOLUME_JSON_PATH), exist_ok=True)
-
-        data = leer_json_modulos(MODULOS_VOLUME_JSON_PATH)
-        items = data.setdefault("items", {})
-
-        now = datetime.now().isoformat(timespec="seconds")
-
-        registro_anterior = items.get(cache_key)
-        created_at = now
-        if isinstance(registro_anterior, dict) and registro_anterior.get("created_at"):
-            created_at = registro_anterior["created_at"]
-
-        items[cache_key] = {
-            "grupo": grupo_modulos_por_tipo(tipo),
-            "tipo_referencia": (tipo or "").upper().strip(),
-            "tema_original": (tema or "").strip(),
-            "modulos": [str(m).upper().strip() for m in modulos],
-            "created_at": created_at,
-            "updated_at": now,
-        }
-
-        tmp_path = f"{MODULOS_VOLUME_JSON_PATH}.tmp"
-
-        with open(tmp_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
-
-        os.replace(tmp_path, MODULOS_VOLUME_JSON_PATH)
-
-
-def obtener_modulos_desde_json(tipo: str, tema: str) -> list[str] | None:
+def obtener_modulos_desde_base(tipo: str, tema: str) -> list[str] | None:
     tipo_key = (tipo or "").upper().strip()
     if tipo_key not in MODULOS_COUNT:
         raise ValueError("Tipo no soportado para módulos")
@@ -684,16 +602,7 @@ def obtener_modulos_desde_json(tipo: str, tema: str) -> list[str] | None:
     cantidad = MODULOS_COUNT[tipo_key]
     cache_key = construir_clave_modulos(tipo_key, tema)
 
-    # 1. Primero Railway Volume: es el más reciente.
-    modulos_volume = buscar_modulos_en_json(
-        MODULOS_VOLUME_JSON_PATH,
-        cache_key,
-        cantidad
-    )
-    if modulos_volume:
-        return modulos_volume
-
-    # 2. Luego JSON base del repositorio GitHub.
+    # El archivo base siempre tiene prioridad sobre la caché dinámica.
     modulos_base = buscar_modulos_en_json(
         MODULOS_BASE_JSON_PATH,
         cache_key,
@@ -741,14 +650,19 @@ def obtener_modulos_por_tema(tipo: str, tema: str) -> list[str]:
     count = MODULOS_COUNT[tipo_key]
     cache_key = construir_clave_modulos(tipo_key, tema)
 
-    # 1. Buscar primero en JSON persistente:
-    #    - Railway Volume
-    #    - JSON base del repositorio GitHub
-    modulos_json = obtener_modulos_desde_json(tipo_key, tema)
-    if modulos_json:
-        return modulos_json
+    # 1. Buscar en el JSON base de solo lectura incluido en la aplicación.
+    modulos_base = obtener_modulos_desde_base(tipo_key, tema)
+    if modulos_base:
+        logger.info("Caché de módulos encontrada en JSON base: cache_key=%s", cache_key)
+        return modulos_base
 
-    # 2. Si no existe en ningún JSON, recién usar OpenAI.
+    # 2. Buscar en la caché persistente de Firestore.
+    modulos_firestore = buscar_modulos_en_firestore(cache_key, count)
+    if modulos_firestore:
+        logger.info("Caché de módulos encontrada en Firestore: cache_key=%s", cache_key)
+        return modulos_firestore
+
+    # 3. Si no existe en ninguna caché, usar OpenAI.
     try:
         response = client.responses.create(
             model="gpt-5-mini",
@@ -766,19 +680,24 @@ def obtener_modulos_por_tema(tipo: str, tema: str) -> list[str]:
 
         modulos = [str(m).upper().strip() for m in modulos]
 
-        # 3. Guardar solo resultados válidos de OpenAI en Railway Volume.
-        guardar_modulos_en_volume_json(
-            cache_key=cache_key,
-            tipo=tipo_key,
-            tema=tema,
-            modulos=modulos,
-        )
-
-        return modulos
-
     except Exception:
-        # No guardar fallback en JSON para no contaminar el cache persistente.
+        logger.exception(
+            "Error generando módulos con OpenAI para cache_key=%s",
+            cache_key,
+        )
+        # No guardar el fallback para no contaminar la caché persistente.
         return [f"MÓDULO {i+1}" for i in range(count)]
+
+    # 4. Persistir el resultado válido. Un error de Firestore no descarta la respuesta.
+    guardar_modulos_en_firestore(
+        cache_key=cache_key,
+        grupo=grupo_modulos_por_tipo(tipo_key),
+        tipo=tipo_key,
+        tema=tema,
+        modulos=modulos,
+    )
+
+    return modulos
 
 # -------------------------------------------------
 # CORS

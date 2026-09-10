@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: diplomas-back
+    runtime: python
+    plan: free
+    region: virginia
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: FIRESTORE_PROJECT_ID
+        sync: false
+      - key: FIRESTORE_DATABASE_ID
+        value: (default)
+      - key: FIRESTORE_COLLECTION
+        value: modulos_cache
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/secrets/firebase-service-account.json

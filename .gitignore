@@ -4,6 +4,11 @@
 # Environment variables
 .env
 
+# Credenciales privadas de Google/Firebase
+firebase-service-account.json
+service-account*.json
+*firebase-adminsdk*.json
+
 # Python cache
 __pycache__/
 *.pyc
@@ -13,6 +18,8 @@ __pycache__/
 
 # Outputs
 app/output/
+app/data/modulos_cache.json
+app/data/*.tmp
 
 # Logs
 *.log
