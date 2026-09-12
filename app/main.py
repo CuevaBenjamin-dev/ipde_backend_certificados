@@ -36,7 +36,7 @@ load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 
-app = FastAPI(title="Certificados API", version="2.3.0")
+app = FastAPI(title="Certificados API", version="2.4.0")
 logger = logging.getLogger(__name__)
 
 # Modelos disponibles (carpetas dentro de app/templates)
@@ -45,12 +45,15 @@ logger = logging.getLogger(__name__)
 # - UNIVERSIDAD_2QRS
 # - UNIVERSIDAD_AZUL
 # - COLEGIO_ABOGADOS_CALLAO
+# - COLEGIO_DE_PROFESORES_DEL_PERU
+# - COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO
 MODELO_FOLDER_MAP = {
     "INSTITUTO": "instituto",
     "UNIVERSIDAD_2QRS": "universidad_2qrs",
     "UNIVERSIDAD_AZUL": "universidad_azul",
     "COLEGIO_ABOGADOS_CALLAO": "colegio_de_abogados_del_callao", 
     "COLEGIO_DE_PROFESORES_DEL_PERU": "colegio_de_profesores_del_peru",
+    "COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO": "colegio_de_profesores_del_peru_nuevo",
 }
 
 # Modelos que usan formato de fecha largo (dd de Mes del yyyy)
@@ -59,6 +62,7 @@ MODELOS_FECHA_LARGA = {
     "UNIVERSIDAD_AZUL",
     "COLEGIO_ABOGADOS_CALLAO", 
     "COLEGIO_DE_PROFESORES_DEL_PERU",
+    "COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO",
 }
 
 
@@ -1020,6 +1024,7 @@ MODEL_FILENAME_LABELS = {
     "UNIVERSIDAD_AZUL": "UNT AZUL",
     "COLEGIO_ABOGADOS_CALLAO": "CAC",
     "COLEGIO_DE_PROFESORES_DEL_PERU": "CPP",
+    "COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO": "CPP NUEVO",
 }
 
 
