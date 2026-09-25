@@ -18,3 +18,5 @@ services:
         value: modulos_cache
       - key: GOOGLE_APPLICATION_CREDENTIALS
         value: /etc/secrets/firebase-service-account.json
+      - key: GOOGLE_SHEET_ID
+        sync: false

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Path
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -26,6 +26,12 @@ from app.firestore_cache import (
     extraer_modulos_de_registro,
     guardar_modulos_en_firestore,
     normalizar_clave_tema,
+)
+from app.generation_log import (
+    RegistroNoDisponible,
+    registrar_generacion,
+    confirmar_generacion,
+    sincronizar_generacion,
 )
 
 # -------------------------------------------------
@@ -717,7 +723,10 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["Content-Disposition"],
+    expose_headers=[
+        "Content-Disposition",
+        "X-Generation-Id",
+    ],
 )
 
 
@@ -1092,6 +1101,7 @@ def health():
 @app.post("/api/diplomas")
 def generate_pptx_batch(
     payload: BatchRequest,
+    background_tasks: BackgroundTasks,
 ):
     if not payload.items:
         raise HTTPException(status_code=400, detail="items no puede estar vacío")
@@ -1102,10 +1112,8 @@ def generate_pptx_batch(
 
     if modelo_lote == UNIVERSIDAD_2QRS_MODEL_KEY:
         output = BytesIO(generar_pptx_universidad_2qrs(payload.items))
-        return StreamingResponse(
-            output,
-            media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            headers={"Content-Disposition": content_disposition},
+        return respuesta_pptx_registrada(
+            output, payload.items, filename, content_disposition, background_tasks
         )
 
     # 1. Generar presentaciones SIN QR
@@ -1133,8 +1141,49 @@ def generate_pptx_batch(
     merged.save(output)
     output.seek(0)
 
+    return respuesta_pptx_registrada(
+        output, payload.items, filename, content_disposition, background_tasks
+    )
+
+
+def respuesta_pptx_registrada(output, items, filename, content_disposition, background_tasks):
+    try:
+        generation_id = registrar_generacion(items, filename=filename)
+    except RegistroNoDisponible as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="No se pudo registrar la generación. Intenta nuevamente en unos momentos.",
+        ) from exc
+    background_tasks.add_task(sincronizar_generacion, generation_id)
     return StreamingResponse(
         output,
         media_type="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        headers={"Content-Disposition": content_disposition}
+        headers={
+            "Content-Disposition": content_disposition,
+            "X-Generation-Id": generation_id,
+        },
+        background=background_tasks,
     )
+
+
+@app.post("/api/diplomas/confirmar/{generation_id}")
+def confirmar_diploma(
+    background_tasks: BackgroundTasks,
+    generation_id: str = Path(pattern=r"^[0-9a-f]{32}$"),
+):
+    try:
+        confirmado = confirmar_generacion(generation_id)
+    except RegistroNoDisponible as exc:
+        raise HTTPException(status_code=503, detail="No se pudo guardar la confirmación") from exc
+
+    if not confirmado:
+        raise HTTPException(
+            status_code=404,
+            detail="Registro de generación no encontrado",
+        )
+
+    background_tasks.add_task(sincronizar_generacion, generation_id)
+    return {
+        "ok": True,
+        "generation_id": generation_id,
+    }

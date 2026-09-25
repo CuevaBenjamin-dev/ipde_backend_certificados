@@ -1,0 +1,356 @@
+diff --git a/src/app/services/formularioService.ts b/src/app/services/formularioService.ts
+--- a/src/app/services/formularioService.ts
++++ b/src/app/services/formularioService.ts
+@@ -1,24 +1,48 @@
+-import { HttpClient, HttpResponse } from '@angular/common/http';
+-import { Injectable } from '@angular/core';
+-import { Observable } from 'rxjs';
+-
+-@Injectable({
+-  providedIn: 'root',
+-})
+-export class FormularioService {
+-  // private readonly API_URL =
+-  //   'https://ipdebackendcertificados-production.up.railway.app/api/diplomas';
+-  // private readonly API_URL = 'http://localhost:8001/api/diplomas';
+-  // private readonly API_URL = 'https://legwork-sulfide-slacking.ngrok-free.dev/api/diplomas';
+-  private readonly API_URL = 'https://diplomas-back.onrender.com/api/diplomas';
+-
+-  constructor(private http: HttpClient) {}
+-
+-  /** Envía múltiples modelos y recibe el PPTX con headers incluidos */
+-  generarPPTX(payload: any): Observable<HttpResponse<Blob>> {
+-    return this.http.post(this.API_URL, payload, {
+-      responseType: 'blob',
+-      observe: 'response',
+-    });
+-  }
+-}
++import { HttpClient, HttpErrorResponse, HttpResponse } from '@angular/common/http';
++import { Injectable } from '@angular/core';
++import { Observable, retry, throwError, timer } from 'rxjs';
++
++@Injectable({
++  providedIn: 'root',
++})
++export class FormularioService {
++  // private readonly API_URL =
++  //   'https://ipdebackendcertificados-production.up.railway.app/api/diplomas';
++  // private readonly API_URL = 'http://localhost:8001/api/diplomas';
++  // private readonly API_URL = 'https://legwork-sulfide-slacking.ngrok-free.dev/api/diplomas';
++  private readonly API_URL = 'https://diplomas-back.onrender.com/api/diplomas';
++
++  constructor(private http: HttpClient) {}
++
++  /** Envía múltiples modelos y recibe el PPTX con headers incluidos */
++  generarPPTX(payload: any): Observable<HttpResponse<Blob>> {
++    return this.http.post(this.API_URL, payload, {
++      responseType: 'blob',
++      observe: 'response',
++    });
++  }
++  /** Confirma la recepción del archivo sin volver a generar el PPTX. */
++  confirmarGeneracion(
++    generationId: string,
++  ): Observable<{ ok: boolean; generation_id: string }> {
++    return this.http.post<{ ok: boolean; generation_id: string }>(
++      `${this.API_URL}/confirmar/${encodeURIComponent(generationId)}`,
++      {},
++      { timeout: 10000 },
++    ).pipe(
++      retry({
++        count: 2,
++        delay: (error: unknown, intento: number) => {
++          const temporal =
++            error instanceof HttpErrorResponse &&
++            (error.status === 0 ||
++              error.status === 408 ||
++              error.status === 429 ||
++              (error.status >= 500 && error.status < 600));
++
++          return temporal ? timer(intento * 1000) : throwError(() => error);
++        },
++      }),
++    );
++  }
++}
+diff --git a/src/app/pages/formulario/formulario.ts b/src/app/pages/formulario/formulario.ts
+--- a/src/app/pages/formulario/formulario.ts
++++ b/src/app/pages/formulario/formulario.ts
+@@ -594,15 +594,27 @@
+     this.service.generarPPTX(payload).subscribe({
+       next: (response) => {
+         const archivo = response.body;
+ 
+-        if (!archivo) {
++        if (!archivo || archivo.size === 0) {
+           alert('No se recibió el archivo PPTX.');
+           return;
+         }
+ 
+         const contentDisposition = response.headers.get('Content-Disposition');
+ 
+         const nombreArchivo = this.obtenerNombreArchivoDesdeContentDisposition(contentDisposition);
+ 
+         this.descargarArchivo(archivo, nombreArchivo);
++
++        const generationId = response.headers.get('X-Generation-Id');
++        if (generationId) {
++          this.service.confirmarGeneracion(generationId).subscribe({
++            error: (error) => {
++              console.warn(
++                'Se inició la descarga, pero no se pudo confirmar su registro.',
++                error,
++              );
++            },
++          });
++        }
+       },
+diff --git a/src/app/services/formularioService.generation-log.spec.ts b/src/app/services/formularioService.generation-log.spec.ts
+new file mode 100644
+--- /dev/null
++++ b/src/app/services/formularioService.generation-log.spec.ts
+@@ -0,0 +1,112 @@
++import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
++import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
++import { TestBed } from '@angular/core/testing';
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
++
++import { FormularioService } from './formularioService';
++
++describe('FormularioService: confirmación de generación', () => {
++  const apiUrl = 'https://diplomas-back.onrender.com/api/diplomas';
++  const generationId = '0123456789abcdef0123456789abcdef';
++  const confirmationUrl = `${apiUrl}/confirmar/${generationId}`;
++  let service: FormularioService;
++  let http: HttpTestingController;
++
++  beforeEach(() => {
++    TestBed.configureTestingModule({
++      providers: [provideHttpClient(), provideHttpClientTesting()],
++    });
++    service = TestBed.inject(FormularioService);
++    http = TestBed.inject(HttpTestingController);
++    vi.useFakeTimers();
++  });
++
++  afterEach(() => {
++    http.verify();
++    vi.useRealTimers();
++    TestBed.resetTestingModule();
++  });
++
++  it('envía el ID al endpoint correcto con tiempo máximo y cuerpo vacío', () => {
++    const next = vi.fn();
++    service.confirmarGeneracion(generationId).subscribe(next);
++
++    const request = http.expectOne(confirmationUrl);
++    expect(request.request.method).toBe('POST');
++    expect(request.request.body).toEqual({});
++    expect(request.request.timeout).toBe(10000);
++    request.flush({ ok: true, generation_id: generationId });
++
++    expect(next).toHaveBeenCalledWith({ ok: true, generation_id: generationId });
++    http.expectNone(apiUrl);
++  });
++
++  it.each([0, 408, 429, 500, 503])(
++    'reintenta errores temporales %s a los 1 y 2 segundos como máximo',
++    (status) => {
++      const error = vi.fn();
++      service.confirmarGeneracion(generationId).subscribe({ error });
++
++      const fail = () => {
++        const request = http.expectOne(confirmationUrl);
++        if (status === 0) {
++          request.error(new ProgressEvent('error'));
++        } else {
++          request.flush({}, { status, statusText: 'Temporary failure' });
++        }
++      };
++
++      fail();
++      vi.advanceTimersByTime(999);
++      http.expectNone(confirmationUrl);
++      vi.advanceTimersByTime(1);
++      fail();
++      vi.advanceTimersByTime(1999);
++      http.expectNone(confirmationUrl);
++      vi.advanceTimersByTime(1);
++      fail();
++
++      expect(error).toHaveBeenCalledTimes(1);
++      expect(error.mock.calls[0][0]).toBeInstanceOf(HttpErrorResponse);
++      vi.advanceTimersByTime(10000);
++      http.expectNone(confirmationUrl);
++      http.expectNone(apiUrl);
++    },
++  );
++
++  it.each([400, 401, 403, 404])('no reintenta errores permanentes %s', (status) => {
++    const error = vi.fn();
++    service.confirmarGeneracion(generationId).subscribe({ error });
++
++    http.expectOne(confirmationUrl).flush({}, { status, statusText: 'Rejected' });
++
++    expect(error).toHaveBeenCalledTimes(1);
++    vi.advanceTimersByTime(10000);
++    http.expectNone(confirmationUrl);
++  });
++
++  it('permite recuperar una confirmación y conserva el mismo ID', () => {
++    const next = vi.fn();
++    service.confirmarGeneracion(generationId).subscribe(next);
++
++    http.expectOne(confirmationUrl).flush({}, { status: 503, statusText: 'Unavailable' });
++    vi.advanceTimersByTime(1000);
++    http.expectOne(confirmationUrl).flush({ ok: true, generation_id: generationId });
++
++    expect(next).toHaveBeenCalledOnce();
++    http.expectNone(apiUrl);
++  });
++
++  it('no reintenta automáticamente la generación del PPTX', () => {
++    const error = vi.fn();
++    service.generarPPTX({ items: [] }).subscribe({ error });
++    const request = http.expectOne(apiUrl);
++    expect(request.request.responseType).toBe('blob');
++    request.error(new ProgressEvent('error'));
++
++    expect(error).toHaveBeenCalledOnce();
++    vi.advanceTimersByTime(10000);
++    http.expectNone(apiUrl);
++    http.expectNone(confirmationUrl);
++  });
++});
+diff --git a/src/app/pages/formulario/formulario.generation-log.spec.ts b/src/app/pages/formulario/formulario.generation-log.spec.ts
+new file mode 100644
+--- /dev/null
++++ b/src/app/pages/formulario/formulario.generation-log.spec.ts
+@@ -0,0 +1,126 @@
++import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
++import { Renderer2 } from '@angular/core';
++import { FormBuilder } from '@angular/forms';
++import { Observable, Subject, of, throwError } from 'rxjs';
++import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
++
++import { FormularioService } from '../../services/formularioService';
++import { Formulario } from './formulario';
++
++describe('Formulario: confirmación de descarga', () => {
++  const generationId = '0123456789abcdef0123456789abcdef';
++  let response: Subject<HttpResponse<Blob>>;
++  let component: Formulario;
++  let service: {
++    generarPPTX: ReturnType<typeof vi.fn>;
++    confirmarGeneracion: ReturnType<typeof vi.fn>;
++  };
++  let download: ReturnType<typeof vi.fn<(blob: Blob, filename: string) => void>>;
++  let steps: string[];
++
++  beforeEach(() => {
++    response = new Subject<HttpResponse<Blob>>();
++    steps = [];
++    service = {
++      generarPPTX: vi.fn(() => response.asObservable()),
++      confirmarGeneracion: vi.fn((): Observable<{ ok: boolean; generation_id: string }> => {
++        steps.push('confirmación');
++        return of({ ok: true, generation_id: generationId });
++      }),
++    };
++
++    // Prueba de la coordinación de descarga; no necesita renderizar la plantilla.
++    component = new Formulario(
++      new FormBuilder(),
++      service as unknown as FormularioService,
++      { setStyle: vi.fn() } as unknown as Renderer2,
++      { get: () => of({}) } as unknown as HttpClient,
++    );
++    component.modelos.at(0).patchValue({
++      modeloCertificado: 'INSTITUTO',
++      tipoModelo: 'DIPLOMADO',
++      nombres: 'Ana',
++      apellidos: 'Pérez',
++      temaDiplomado: 'Gestión pública',
++      fechaInicio: '2026-09-01',
++      fechaFin: '2026-09-24',
++      horasAcademicas: 100,
++      creditosAcademicos: 6,
++      folioNumero: 'ABC-123',
++      fechaEmision: '2026-09-24',
++      codigoEstudiante: '001',
++      ciudad: 'Trujillo',
++    }, { emitEvent: false });
++    expect(component.form.valid).toBe(true);
++
++    download = vi.fn(() => { steps.push('descarga'); });
++    vi.spyOn(
++      component as unknown as { descargarArchivo(blob: Blob, filename: string): void },
++      'descargarArchivo',
++    ).mockImplementation((blob, filename) => download(blob, filename));
++    vi.spyOn(window, 'alert').mockImplementation(() => {});
++    vi.spyOn(console, 'error').mockImplementation(() => {});
++    vi.spyOn(console, 'warn').mockImplementation(() => {});
++  });
++
++  afterEach(() => {
++    response.complete();
++    vi.restoreAllMocks();
++  });
++
++  const headers = () => new HttpHeaders({
++    'X-Generation-Id': generationId,
++    'Content-Disposition': 'attachment; filename="certificados.pptx"',
++  });
++
++  it('confirma una sola vez después de recibir el Blob e iniciar la descarga', () => {
++    component.onSubmit();
++    expect(service.confirmarGeneracion).not.toHaveBeenCalled();
++    expect(download).not.toHaveBeenCalled();
++
++    const blob = new Blob(['pptx']);
++    response.next(new HttpResponse({ body: blob, headers: headers() }));
++
++    expect(download).toHaveBeenCalledWith(blob, 'certificados.pptx');
++    expect(service.confirmarGeneracion).toHaveBeenCalledExactlyOnceWith(generationId);
++    expect(steps).toEqual(['descarga', 'confirmación']);
++    expect(service.generarPPTX).toHaveBeenCalledOnce();
++  });
++
++  it.each([null, new Blob([])])('no confirma una respuesta sin archivo válido', (body) => {
++    component.onSubmit();
++    response.next(new HttpResponse<Blob>({ body, headers: headers() }));
++
++    expect(download).not.toHaveBeenCalled();
++    expect(service.confirmarGeneracion).not.toHaveBeenCalled();
++    expect(window.alert).toHaveBeenCalledOnce();
++  });
++
++  it('conserva la descarga cuando el backend todavía no devuelve un ID', () => {
++    component.onSubmit();
++    response.next(new HttpResponse({ body: new Blob(['pptx']) }));
++
++    expect(download).toHaveBeenCalledOnce();
++    expect(service.confirmarGeneracion).not.toHaveBeenCalled();
++  });
++
++  it('no confirma ni descarga cuando falla la generación', () => {
++    component.onSubmit();
++    response.error(new Error('Generation failed'));
++
++    expect(download).not.toHaveBeenCalled();
++    expect(service.confirmarGeneracion).not.toHaveBeenCalled();
++    expect(window.alert).toHaveBeenCalledOnce();
++  });
++
++  it('un error de confirmación no vuelve a generar ni descargar el archivo', () => {
++    service.confirmarGeneracion.mockReturnValue(throwError(() => new Error('Offline')));
++    component.onSubmit();
++    response.next(new HttpResponse({ body: new Blob(['pptx']), headers: headers() }));
++
++    expect(download).toHaveBeenCalledOnce();
++    expect(service.generarPPTX).toHaveBeenCalledOnce();
++    expect(console.warn).toHaveBeenCalledOnce();
++    expect(window.alert).not.toHaveBeenCalled();
++  });
++});
