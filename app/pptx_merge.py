@@ -408,13 +408,15 @@ def _validate_package(files: dict[str, bytes]) -> None:
             )
 
 
-def merge_pptx_packages(pptx_files: list[bytes]) -> bytes:
+def merge_pptx_packages(pptx_files: list[bytes], *, omit_imported_notes: bool = False) -> bytes:
     """
     Merge PPTX packages while preserving each slide's master, layout and media.
 
     This is intentionally package-level. Recreating a slide with python-pptx assigns
     it a layout from the first presentation, which corrupts Universidad 2QRS when
-    certificate types with different visual masters are combined.
+    certificate types with different visual masters are combined. A source with
+    empty notes can omit imported notes to avoid copying an unregistered notes
+    master into the merged package.
     """
     if not pptx_files:
         raise ValueError("No hay PPTX para unir")
@@ -473,13 +475,19 @@ def merge_pptx_packages(pptx_files: list[bytes]) -> bytes:
                 destination_part_path,
             )
 
-            if destination_part_path.startswith("ppt/slideMasters/"):
+            if re.fullmatch(r"ppt/slideMasters/slideMaster\d+\.xml", destination_part_path):
                 copied_master_parts.add(destination_part_path)
 
             source_rels_path = _rels_path_for_part(source_part_path)
             if source_rels_path in source_files:
                 relationships_root = ET.fromstring(source_files[source_rels_path])
-                for relationship in relationships_root:
+                for relationship in list(relationships_root):
+                    if (
+                        omit_imported_notes
+                        and relationship.attrib.get("Type", "").endswith("/notesSlide")
+                    ):
+                        relationships_root.remove(relationship)
+                        continue
                     if (
                         relationship.attrib.get("TargetMode", "").lower()
                         == "external"

@@ -4,7 +4,9 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
-from pptx.util import Cm
+from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE
+from pptx.util import Cm, Pt
+from PIL import ImageFont
 from io import BytesIO
 import unicodedata
 import re
@@ -53,6 +55,7 @@ logger = logging.getLogger(__name__)
 # - COLEGIO_ABOGADOS_CALLAO
 # - COLEGIO_DE_PROFESORES_DEL_PERU
 # - COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO
+# - IPDE_CAC (CURSO, DIPLOMADO y PROGRAMA DE ESPECIALIZACIÓN)
 MODELO_FOLDER_MAP = {
     "INSTITUTO": "instituto",
     "UNIVERSIDAD_2QRS": "universidad_2qrs",
@@ -60,6 +63,7 @@ MODELO_FOLDER_MAP = {
     "COLEGIO_ABOGADOS_CALLAO": "colegio_de_abogados_del_callao", 
     "COLEGIO_DE_PROFESORES_DEL_PERU": "colegio_de_profesores_del_peru",
     "COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO": "colegio_de_profesores_del_peru_nuevo",
+    "IPDE_CAC": "ipde_cac",
 }
 
 # Modelos que usan formato de fecha largo (dd de Mes del yyyy)
@@ -69,6 +73,7 @@ MODELOS_FECHA_LARGA = {
     "COLEGIO_ABOGADOS_CALLAO", 
     "COLEGIO_DE_PROFESORES_DEL_PERU",
     "COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO",
+    "IPDE_CAC",
 }
 
 
@@ -262,6 +267,14 @@ def resolve_template_path(modelo_certificado: str, tipo_modelo: str) -> str:
         raise HTTPException(
             status_code=400,
             detail=f"Tipo de certificado no soportado: {tipo_key}"
+        )
+
+    if modelo_key == "IPDE_CAC" and tipo_key not in {
+        "CURSO", "DIPLOMADO", "PROGRAMA DE ESPECIALIZACIÓN"
+    }:
+        raise HTTPException(
+            status_code=400,
+            detail="Tipo de certificado todavía no disponible para IPDE_CAC",
         )
 
     folder = MODELO_FOLDER_MAP[modelo_key]
@@ -800,6 +813,68 @@ def replace_placeholders(prs, mapping):
             replace_in_shape(shape, mapping)
 
 
+def _lineas_modulo(texto: str, fuente, ancho_px: float) -> int:
+    lineas = 1
+    linea = ""
+    for palabra in texto.split():
+        siguiente = f"{linea} {palabra}" if linea else palabra
+        if linea and fuente.getlength(siguiente) > ancho_px:
+            lineas += 1
+            linea = palabra
+        else:
+            linea = siguiente
+    return lineas
+
+
+def _fuente_arial_para_medicion(puntos: float):
+    pixeles = max(1, round(puntos * 96 / 72))
+    for nombre in ("arial.ttf", "LiberationSans-Regular.ttf", "DejaVuSans.ttf"):
+        try:
+            return ImageFont.truetype(nombre, pixeles)
+        except OSError:
+            continue
+    return ImageFont.load_default(size=pixeles)
+
+
+def ajustar_fuente_modulos_ipde_cac(prs: Presentation, modulos: list[str]) -> float:
+    """Usa una sola medida en todos los módulos, calculada para el más largo."""
+    formas = {}
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if not shape.has_text_frame:
+                continue
+            match = re.fullmatch(r"\{\{MODULO_(\d+)\}\}", shape.text.strip())
+            if match:
+                formas[int(match.group(1))] = shape
+
+    if set(formas) != set(range(1, len(modulos) + 1)):
+        raise HTTPException(status_code=500, detail="Plantilla IPDE_CAC con módulos incompletos")
+
+    ancho_px = min(shape.width / 9525 for shape in formas.values()) * 0.90
+    alto_px = min(shape.height / 9525 for shape in formas.values()) * 0.94
+    candidatos = (9.0, 8.5, 8.0, 7.5, 7.0, 6.5, 6.0, 5.5, 5.0)
+    puntos_elegidos = candidatos[-1]
+    for puntos in candidatos:
+        fuente = _fuente_arial_para_medicion(puntos)
+        alto_linea_px = puntos * 96 / 72 * 1.24
+        if all(
+            _lineas_modulo(modulo, fuente, ancho_px) * alto_linea_px <= alto_px
+            for modulo in modulos
+        ):
+            puntos_elegidos = puntos
+            break
+
+    for shape in formas.values():
+        frame = shape.text_frame
+        frame.auto_size = MSO_AUTO_SIZE.NONE
+        frame.word_wrap = True
+        frame.vertical_anchor = MSO_ANCHOR.MIDDLE
+        for paragraph in frame.paragraphs:
+            for run in paragraph.runs:
+                run.font.size = Pt(puntos_elegidos)
+    return puntos_elegidos
+
+
 # -------------------------------------------------
 # MERGE PPTX
 # -------------------------------------------------
@@ -898,6 +973,8 @@ def generar_presentacion_por_item(item: DiplomaRequest) -> Presentation:
     
     nombre_posterior = nombre_completo_capitalizado(item.nombres, item.apellidos)
     modulos = obtener_modulos_por_tema(tipo, item.temaDiplomado)
+    if modelo_cert == "IPDE_CAC":
+        modulos = [" ".join(modulo.split()) for modulo in modulos]
     
     ##horas de módulos correctamente distribuidas
     cantidad_modulos = MODULOS_COUNT[tipo]
@@ -940,6 +1017,10 @@ def generar_presentacion_por_item(item: DiplomaRequest) -> Presentation:
         "{{CIUDAD}}": (item.ciudad or "").strip(),
     }
 
+    if modelo_cert == "IPDE_CAC":
+        ciudad = (item.ciudad or "").strip()
+        mapping["{{CIUDAD}}"] = f"{ciudad}, " if ciudad else ""
+
     for i, m in enumerate(modulos, start=1):
         mapping[f"{{{{MODULO_{i}}}}}"] = m
     
@@ -947,6 +1028,9 @@ def generar_presentacion_por_item(item: DiplomaRequest) -> Presentation:
     for i, h in enumerate(horas_por_modulo, start=1):
         mapping[f"{{{{HORAS_MODULO_{i}}}}}"] = str(h)
 
+
+    if modelo_cert == "IPDE_CAC":
+        ajustar_fuente_modulos_ipde_cac(prs, modulos)
 
     replace_placeholders(prs, mapping)
 
@@ -998,8 +1082,10 @@ def insertar_qr_en_presentacion_item(
         )
 
 
-def generar_pptx_universidad_2qrs(
+def generar_pptx_por_paquetes(
     items: List[DiplomaRequest],
+    *,
+    omit_imported_notes: bool = False,
 ) -> bytes:
     pptx_files = []
     for item in items:
@@ -1007,7 +1093,11 @@ def generar_pptx_universidad_2qrs(
         insertar_qr_en_presentacion_item(prs, item)
         pptx_files.append(presentation_to_pptx_bytes(prs))
 
-    return merge_pptx_packages(pptx_files)
+    return merge_pptx_packages(pptx_files, omit_imported_notes=omit_imported_notes)
+
+
+def generar_pptx_universidad_2qrs(items: List[DiplomaRequest]) -> bytes:
+    return generar_pptx_por_paquetes(items)
 
 
 def obtener_modelo_unico_del_lote(items: List[DiplomaRequest]) -> str:
@@ -1034,6 +1124,7 @@ MODEL_FILENAME_LABELS = {
     "COLEGIO_ABOGADOS_CALLAO": "CAC",
     "COLEGIO_DE_PROFESORES_DEL_PERU": "CPP",
     "COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO": "CPP NUEVO",
+    "IPDE_CAC": "IPDE CAC",
 }
 
 
@@ -1112,6 +1203,12 @@ def generate_pptx_batch(
 
     if modelo_lote == UNIVERSIDAD_2QRS_MODEL_KEY:
         output = BytesIO(generar_pptx_universidad_2qrs(payload.items))
+        return respuesta_pptx_registrada(
+            output, payload.items, filename, content_disposition, background_tasks
+        )
+
+    if modelo_lote == "IPDE_CAC":
+        output = BytesIO(generar_pptx_por_paquetes(payload.items, omit_imported_notes=True))
         return respuesta_pptx_registrada(
             output, payload.items, filename, content_disposition, background_tasks
         )
