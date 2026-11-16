@@ -56,6 +56,7 @@ logger = logging.getLogger(__name__)
 # - COLEGIO_DE_PROFESORES_DEL_PERU
 # - COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO
 # - IPDE_CAC (CURSO, DIPLOMADO y PROGRAMA DE ESPECIALIZACIÓN)
+# - ESFP (CURSO, DIPLOMADO y PROGRAMA DE ESPECIALIZACIÓN)
 MODELO_FOLDER_MAP = {
     "INSTITUTO": "instituto",
     "UNIVERSIDAD_2QRS": "universidad_2qrs",
@@ -64,6 +65,7 @@ MODELO_FOLDER_MAP = {
     "COLEGIO_DE_PROFESORES_DEL_PERU": "colegio_de_profesores_del_peru",
     "COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO": "colegio_de_profesores_del_peru_nuevo",
     "IPDE_CAC": "ipde_cac",
+    "ESFP": "esfp",
 }
 
 # Modelos que usan formato de fecha largo (dd de Mes del yyyy)
@@ -74,6 +76,7 @@ MODELOS_FECHA_LARGA = {
     "COLEGIO_DE_PROFESORES_DEL_PERU",
     "COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO",
     "IPDE_CAC",
+    "ESFP",
 }
 
 
@@ -269,12 +272,12 @@ def resolve_template_path(modelo_certificado: str, tipo_modelo: str) -> str:
             detail=f"Tipo de certificado no soportado: {tipo_key}"
         )
 
-    if modelo_key == "IPDE_CAC" and tipo_key not in {
+    if modelo_key in {"IPDE_CAC", "ESFP"} and tipo_key not in {
         "CURSO", "DIPLOMADO", "PROGRAMA DE ESPECIALIZACIÓN"
     }:
         raise HTTPException(
             status_code=400,
-            detail="Tipo de certificado todavía no disponible para IPDE_CAC",
+            detail=f"Tipo de certificado todavía no disponible para {modelo_key}",
         )
 
     folder = MODELO_FOLDER_MAP[modelo_key]
@@ -875,6 +878,167 @@ def ajustar_fuente_modulos_ipde_cac(prs: Presentation, modulos: list[str]) -> fl
     return puntos_elegidos
 
 
+def _lineas_en_celda_esfp(texto: str, fuente, ancho_px: float) -> int:
+    """Cuenta líneas por palabras y divide también una palabra excepcionalmente larga."""
+    lineas = 1
+    linea = ""
+    for palabra in texto.split():
+        propuesta = f"{linea} {palabra}" if linea else palabra
+        if fuente.getlength(propuesta) <= ancho_px:
+            linea = propuesta
+            continue
+        if linea:
+            lineas += 1
+            linea = ""
+        for caracter in palabra:
+            if linea and fuente.getlength(linea + caracter) > ancho_px:
+                lineas += 1
+                linea = caracter
+            else:
+                linea += caracter
+    return lineas
+
+
+def ajustar_tabla_modulos_esfp(prs: Presentation, modulos: list[str]) -> float:
+    """Ajusta alturas de filas y usa una medida común en todos los temas ESFP."""
+    tablas = [
+        shape.table
+        for slide in prs.slides
+        for shape in slide.shapes
+        if shape.has_table
+        and any(
+            "{{MODULO_1}}" in cell.text
+            for row in shape.table.rows
+            for cell in row.cells
+        )
+    ]
+    if len(tablas) != 1 or len(tablas[0].rows) != len(modulos):
+        raise HTTPException(status_code=500, detail="Plantilla ESFP con módulos incompletos")
+
+    tabla = tablas[0]
+    total_emu = sum(int(fila.height) for fila in tabla.rows)
+    ancho_px = min(
+        (int(tabla.columns[1].width) - int(fila.cells[1].margin_left)
+         - int(fila.cells[1].margin_right)) / 9525 * 0.96
+        for fila in tabla.rows
+    )
+    margen_vertical_px = max(
+        (int(fila.cells[1].margin_top) + int(fila.cells[1].margin_bottom)) / 9525
+        for fila in tabla.rows
+    )
+    minimo_px = (0.85 if len(modulos) == 5 else 0.65) * 360000 / 9525
+    candidatos = (11.0, 10.5, 10.0, 9.5, 9.0, 8.5, 8.0, 7.5, 7.0, 6.5, 6.0, 5.5, 5.0)
+    elegido = None
+    alturas_px = []
+    for puntos in candidatos:
+        fuente = _fuente_arial_para_medicion(puntos)
+        alto_linea_px = puntos * 96 / 72 * 1.22
+        calculadas = [
+            max(
+                minimo_px,
+                _lineas_en_celda_esfp(modulo, fuente, ancho_px)
+                * alto_linea_px + margen_vertical_px + 2,
+            )
+            for modulo in modulos
+        ]
+        if sum(calculadas) <= total_emu / 9525:
+            elegido = puntos
+            alturas_px = calculadas
+            break
+    if elegido is None:
+        raise HTTPException(
+            status_code=422,
+            detail="Los títulos de los módulos ESFP son demasiado extensos para la plantilla",
+        )
+
+    sobrante_px = total_emu / 9525 - sum(alturas_px)
+    alturas_emu = [
+        round((alto_px + sobrante_px / len(modulos)) * 9525)
+        for alto_px in alturas_px
+    ]
+    alturas_emu[-1] += total_emu - sum(alturas_emu)
+    for fila, altura_emu in zip(tabla.rows, alturas_emu):
+        fila.height = altura_emu
+        celda = fila.cells[1]
+        frame = celda.text_frame
+        frame.auto_size = MSO_AUTO_SIZE.NONE
+        frame.word_wrap = True
+        celda.vertical_anchor = MSO_ANCHOR.MIDDLE
+        for parrafo in frame.paragraphs:
+            parrafo.space_before = Pt(0)
+            parrafo.space_after = Pt(0)
+            parrafo.line_spacing = 1.0
+            for run in parrafo.runs:
+                run.font.size = Pt(elegido)
+    return elegido
+
+
+def _fuente_esfp_para_medicion(puntos: float, *, serifa: bool):
+    pixeles = max(1, round(puntos * 96 / 72))
+    nombres = (
+        ("georgiab.ttf", "DejaVuSerif-Bold.ttf") if serifa
+        else ("arialbd.ttf", "LiberationSans-Bold.ttf", "DejaVuSans-Bold.ttf")
+    )
+    for nombre in nombres:
+        try:
+            return ImageFont.truetype(nombre, pixeles)
+        except OSError:
+            continue
+    return ImageFont.load_default(size=pixeles)
+
+
+def ajustar_anverso_esfp(prs: Presentation, nombre: str, tema: str) -> None:
+    """Evita que un nombre o tema largo invada el resto del certificado ESFP."""
+    slide = prs.slides[0]
+    nombre_shape = find_shape_by_name(slide, "TextBox 14")
+    encabezado = find_shape_by_name(slide, "TextBox 16")
+    tema_shape = find_shape_by_name(slide, "TextBox 17")
+    fecha_shape = find_shape_by_name(slide, "TextBox 18")
+    cierre_shape = find_shape_by_name(slide, "TextBox 19")
+    ciudad_shape = find_shape_by_name(slide, "TextBox 20")
+    if not all((nombre_shape, encabezado, tema_shape, fecha_shape, cierre_shape, ciudad_shape)):
+        raise HTTPException(status_code=500, detail="Anverso ESFP con campos incompletos")
+
+    ancho_nombre_px = nombre_shape.width / 9525 * 0.94
+    for puntos in (24.5, 23.5, 22.5, 21.5, 20.5, 19.5, 18.5, 17.5, 16.5, 15.5, 14.5, 13.5):
+        fuente = _fuente_esfp_para_medicion(puntos, serifa=False)
+        if fuente.getlength(nombre) <= ancho_nombre_px:
+            break
+    else:
+        raise HTTPException(status_code=422, detail="El nombre es demasiado extenso para el certificado ESFP")
+    nombre_shape.text_frame.auto_size = MSO_AUTO_SIZE.NONE
+    for parrafo in nombre_shape.text_frame.paragraphs:
+        for run in parrafo.runs:
+            run.font.size = Pt(puntos)
+
+    ancho_tema_px = tema_shape.width / 9525 * 0.94
+    alto_original = int(tema_shape.height)
+    limite_ciudad = Cm(14.35)
+    tema_texto = f"“{tema}”"
+    for puntos in (21.5, 20.5, 19.5, 18.5, 17.5, 16.5, 15.5, 14.5, 13.5, 12.5, 11.5):
+        fuente = _fuente_esfp_para_medicion(puntos, serifa=True)
+        lineas = _lineas_en_celda_esfp(tema_texto, fuente, ancho_tema_px)
+        alto_px = lineas * puntos * 96 / 72 * 1.18 + 6
+        alto_necesario = max(alto_original, round(alto_px * 9525))
+        delta = alto_necesario - alto_original
+        if lineas <= 3 and ciudad_shape.top + delta + ciudad_shape.height <= limite_ciudad:
+            break
+    else:
+        raise HTTPException(status_code=422, detail="El tema es demasiado extenso para el certificado ESFP")
+
+    tema_shape.text_frame.auto_size = MSO_AUTO_SIZE.NONE
+    tema_shape.text_frame.word_wrap = True
+    tema_shape.height = alto_necesario
+    for parrafo in tema_shape.text_frame.paragraphs:
+        parrafo.space_before = Pt(0)
+        parrafo.space_after = Pt(0)
+        parrafo.line_spacing = 1.0
+        for run in parrafo.runs:
+            run.font.size = Pt(puntos)
+    for shape in (fecha_shape, cierre_shape, ciudad_shape):
+        shape.top += delta
+
+
 # -------------------------------------------------
 # MERGE PPTX
 # -------------------------------------------------
@@ -973,7 +1137,7 @@ def generar_presentacion_por_item(item: DiplomaRequest) -> Presentation:
     
     nombre_posterior = nombre_completo_capitalizado(item.nombres, item.apellidos)
     modulos = obtener_modulos_por_tema(tipo, item.temaDiplomado)
-    if modelo_cert == "IPDE_CAC":
+    if modelo_cert in {"IPDE_CAC", "ESFP"}:
         modulos = [" ".join(modulo.split()) for modulo in modulos]
     
     ##horas de módulos correctamente distribuidas
@@ -1017,7 +1181,7 @@ def generar_presentacion_por_item(item: DiplomaRequest) -> Presentation:
         "{{CIUDAD}}": (item.ciudad or "").strip(),
     }
 
-    if modelo_cert == "IPDE_CAC":
+    if modelo_cert in {"IPDE_CAC", "ESFP"}:
         ciudad = (item.ciudad or "").strip()
         mapping["{{CIUDAD}}"] = f"{ciudad}, " if ciudad else ""
 
@@ -1031,6 +1195,13 @@ def generar_presentacion_por_item(item: DiplomaRequest) -> Presentation:
 
     if modelo_cert == "IPDE_CAC":
         ajustar_fuente_modulos_ipde_cac(prs, modulos)
+    elif modelo_cert == "ESFP":
+        ajustar_anverso_esfp(
+            prs,
+            f"{item.nombres} {item.apellidos}".upper().strip(),
+            item.temaDiplomado.upper().strip(),
+        )
+        ajustar_tabla_modulos_esfp(prs, modulos)
 
     replace_placeholders(prs, mapping)
 
@@ -1068,11 +1239,8 @@ def insertar_qr_en_presentacion_item(
         item.temaDiplomado,
     )
     qr_image = generate_qr_image(qr_url)
-    qr_size_cm = (
-        2.0
-        if item.modeloCertificado.upper().strip() == "UNIVERSIDAD_AZUL"
-        else 2.78
-    )
+    modelo_cert = item.modeloCertificado.upper().strip()
+    qr_size_cm = {"UNIVERSIDAD_AZUL": 2.0, "ESFP": 2.6}.get(modelo_cert, 2.78)
 
     for slide in prs.slides:
         insert_qr_at_placeholder_in_slide(
@@ -1125,13 +1293,14 @@ MODEL_FILENAME_LABELS = {
     "COLEGIO_DE_PROFESORES_DEL_PERU": "CPP",
     "COLEGIO_DE_PROFESORES_DEL_PERU_NUEVO": "CPP NUEVO",
     "IPDE_CAC": "IPDE CAC",
+    "ESFP": "ESFP",
 }
 
 
 def limpiar_nombre_archivo(texto: str) -> str:
     """
     Limpia caracteres que Windows no permite en nombres de archivo:
-    \ / : * ? " < > |
+    \\ / : * ? " < > |
 
     Mantiene tildes y espacios para que el nombre se vea natural.
     """
@@ -1207,7 +1376,7 @@ def generate_pptx_batch(
             output, payload.items, filename, content_disposition, background_tasks
         )
 
-    if modelo_lote == "IPDE_CAC":
+    if modelo_lote in {"IPDE_CAC", "ESFP"}:
         output = BytesIO(generar_pptx_por_paquetes(payload.items, omit_imported_notes=True))
         return respuesta_pptx_registrada(
             output, payload.items, filename, content_disposition, background_tasks

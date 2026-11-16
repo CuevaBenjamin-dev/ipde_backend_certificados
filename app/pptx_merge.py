@@ -23,6 +23,7 @@ SLIDE_MASTER_REL_TYPE = (
 ET.register_namespace("p", PRESENTATION_NS)
 ET.register_namespace("r", OFFICE_REL_NS)
 ET.register_namespace("a", "http://schemas.openxmlformats.org/drawingml/2006/main")
+ET.register_namespace("", CONTENT_TYPES_NS)
 
 
 def _xml_bytes(root: ET.Element) -> bytes:
